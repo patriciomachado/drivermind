@@ -148,6 +148,9 @@ const LoginView = ({ onSuccess }: { onSuccess: () => void }) => {
                 </div>
                 <h1 className="text-3xl font-bold text-slate-900 mb-2">DriverFlow Pro 2.0</h1>
                 <p className="text-slate-500">Gestão Profissional</p>
+                <p className="text-[10px] text-slate-300 mt-2 font-mono max-w-[200px] break-all mx-auto">
+                    Debug: {process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 15) || 'MISSING'}...
+                </p>
             </div>
             <Card className="mb-6">
                 <form onSubmit={handleLogin} className="space-y-4">
