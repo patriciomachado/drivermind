@@ -146,7 +146,7 @@ const LoginView = ({ onSuccess }: { onSuccess: () => void }) => {
                 <div className="w-20 h-20 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-200">
                     <Car className="text-white w-10 h-10" />
                 </div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">DriverFlow</h1>
+                <h1 className="text-3xl font-bold text-slate-900 mb-2">DriverFlow Pro 2.0</h1>
                 <p className="text-slate-500">Gestão Profissional</p>
             </div>
             <Card className="mb-6">
