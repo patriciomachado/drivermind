@@ -245,90 +245,130 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 // --- HISTORY VIEW ---
 const HistoryView = ({ userId }: { userId: string }) => {
     const [history, setHistory] = useState<any[]>([]);
+    const [vehicles, setVehicles] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchHistory = async () => {
-            // Fetch closed days combined with earnings and expenses sum
-            // Supabase approach: fetch work days, then for each fetch aggregation or fetch all and aggregate locally.
-            // For simplicity/speed in MVP: Fetch all closed workdays, and fetch all expenses/earnings for user, then map.
+    const fetchHistory = async () => {
+        // Fetch vehicles for mapping
+        const { data: vParams } = await supabase.from('vehicles').select('id, name');
+        const vMap: Record<string, string> = {};
+        vParams?.forEach((v: any) => { vMap[v.id] = v.name });
+        setVehicles(vMap);
 
-            const { data: days } = await supabase.from('work_days').select('*').eq('status', 'closed').order('date', { ascending: false });
-            if (!days) { setLoading(false); return; }
+        const { data: days } = await supabase.from('work_days').select('*').eq('status', 'closed').order('date', { ascending: false });
+        if (!days) { setLoading(false); return; }
 
-            const { data: earns } = await supabase.from('earnings').select('*');
-            const { data: exps } = await supabase.from('expenses').select('*');
+        const { data: earns } = await supabase.from('earnings').select('*');
+        const { data: exps } = await supabase.from('expenses').select('*');
 
-            const compiled = days.map(d => {
-                const dayEarns = earns?.filter(e => e.work_day_id === d.id) || [];
-                const dayExps = exps?.filter(e => e.work_day_id === d.id) || [];
-                const totalInc = dayEarns.reduce((a, b) => a + b.amount, 0);
-                const totalCost = dayExps.reduce((a, b) => a + b.amount, 0);
-                return {
-                    ...d,
-                    income: totalInc,
-                    expense: totalCost,
-                    profit: totalInc - totalCost
-                };
-            });
-            setHistory(compiled);
-            setLoading(false);
-        };
-        fetchHistory();
-    }, [userId]);
+        const compiled = days.map(d => {
+            const dayEarns = earns?.filter(e => e.work_day_id === d.id) || [];
+            const dayExps = exps?.filter(e => e.work_day_id === d.id) || [];
+            const totalInc = dayEarns.reduce((a, b) => a + b.amount, 0);
+            const totalCost = dayExps.reduce((a, b) => a + b.amount, 0);
+            return {
+                ...d,
+                income: totalInc,
+                expense: totalCost,
+                profit: totalInc - totalCost
+            };
+        });
+        setHistory(compiled);
+        setLoading(false);
+    };
+
+    useEffect(() => { fetchHistory(); }, [userId]);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Tem certeza? Isso apagará todos os ganhos e despesas deste dia.')) return;
+        // Cascade delete should handle children if DB configured, mostly we need to manually delete if no cascade.
+        // Assuming Supabase RLS allows.
+        await supabase.from('earnings').delete().eq('work_day_id', id);
+        await supabase.from('expenses').delete().eq('work_day_id', id);
+        const { error } = await supabase.from('work_days').delete().eq('id', id);
+        if (error) alert('Erro ao excluir: ' + error.message);
+        else fetchHistory();
+    };
 
     if (loading) return <div className="p-6 text-center text-slate-400">Carregando histórico...</div>;
 
-    const totalProfit = history.reduce((a, b) => a + b.profit, 0);
-    const totalKm = history.reduce((a, b) => a + (b.km_end - b.km_start), 0);
+    // Grouping
+    const groups: Record<string, any[]> = {};
+    history.forEach(day => {
+        const monthKey = new Date(day.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+        if (!groups[monthKey]) groups[monthKey] = [];
+        groups[monthKey].push(day);
+    });
+
+    const monthKeys = Object.keys(groups);
 
     return (
         <div className="p-6 pb-32 space-y-6">
             <div>
                 <h2 className="text-2xl font-bold text-slate-900">Histórico</h2>
-                <p className="text-slate-500 text-sm">Resumo financeiro</p>
+                <p className="text-slate-500 text-sm">Finanças por período</p>
             </div>
 
-            {/* Overall Stats */}
-            <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl">
-                <div className="grid grid-cols-2 gap-6">
-                    <div>
-                        <span className="text-slate-400 text-xs font-bold uppercase">Lucro Total</span>
-                        <div className="text-2xl font-bold text-emerald-400">{formatCurrency(totalProfit)}</div>
-                    </div>
-                    <div>
-                        <span className="text-slate-400 text-xs font-bold uppercase">Km Total</span>
-                        <div className="text-2xl font-bold">{totalKm} km</div>
-                    </div>
-                </div>
-            </div>
+            {monthKeys.length === 0 && <p className="text-center text-slate-400 py-10">Nenhum registro encontrado.</p>}
 
-            <div className="space-y-3">
-                {history.length === 0 && <p className="text-center text-slate-400 py-10">Nenhum dia finalizado ainda.</p>}
+            {monthKeys.map(month => {
+                const days = groups[month];
+                const mProfit = days.reduce((a, b) => a + b.profit, 0);
+                const mKm = days.reduce((a, b) => a + (b.km_end - b.km_start), 0);
+                const mCost = days.reduce((a, b) => a + b.expense, 0);
+                const costPerKm = mKm > 0 ? mCost / mKm : 0;
 
-                {history.map(day => (
-                    <div key={day.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-800">{new Date(day.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
-                                <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">{(day.km_end - day.km_start)} km</span>
+                return (
+                    <div key={month} className="space-y-3">
+                        <div className="flex items-end justify-between px-2">
+                            <h3 className="font-bold text-slate-700 capitalize">{month}</h3>
+                            <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">R$ {costPerKm.toFixed(2)} / km</span>
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-lg flex justify-between items-center">
+                            <div>
+                                <span className="text-xs text-slate-400 font-bold uppercase">Lucro do Mês</span>
+                                <div className="text-xl font-bold text-emerald-400">{formatCurrency(mProfit)}</div>
                             </div>
-                            <div className="text-xs text-slate-400 mt-1">
-                                {formatCurrency(day.income)} - {formatCurrency(day.expense)}
+                            <div className="text-right">
+                                <span className="text-xs text-slate-400 font-bold uppercase">Rodagem</span>
+                                <div className="text-lg font-bold">{mKm} km</div>
                             </div>
                         </div>
-                        <span className={`font-bold text-lg ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {formatCurrency(day.profit)}
-                        </span>
+
+                        {days.map(day => (
+                            <div key={day.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center relative group">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-slate-800">{new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', timeZone: 'UTC' })} <span className="text-xs font-normal text-slate-400 uppercase">({new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' })})</span></span>
+                                        {vehicles[day.vehicle_id] && <span className="text-[10px] text-slate-400 border border-slate-100 px-1.5 py-0.5 rounded uppercase">{vehicles[day.vehicle_id]}</span>}
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-1 flex gap-2">
+                                        <span className="text-emerald-600 font-medium">+{formatCurrency(day.income)}</span>
+                                        <span className="text-red-500 font-medium">-{formatCurrency(day.expense)}</span>
+                                        <span className="text-slate-300">|</span>
+                                        <span>{(day.km_end - day.km_start)} km</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`font-bold text-lg ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                        {formatCurrency(day.profit)}
+                                    </span>
+                                    <button onClick={() => handleDelete(day.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                );
+            })}
         </div>
     );
 };
 
 // --- CORE: TODAY BOARD ---
-const TodayView = ({ vehicle, userId }: { vehicle: Vehicle | null, userId: string }) => {
+const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense }: { vehicle: Vehicle | null, userId: string, onAddEarning: () => void, onAddExpense: () => void }) => {
     const [session, setSession] = useState<WorkDay | null>(null);
     const [earnings, setEarnings] = useState<Earning[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -450,11 +490,11 @@ const TodayView = ({ vehicle, userId }: { vehicle: Vehicle | null, userId: strin
                     <span className="text-indigo-100 text-xs font-bold uppercase">Lucro Líquido</span>
                     <div className="text-4xl font-bold mt-1">{formatCurrency(profit)}</div>
                 </div>
-                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm cursor-pointer active:scale-95 transition-transform hover:bg-emerald-50" onClick={onAddEarning}>
                     <div className="flex items-center gap-2 mb-2"><TrendingUp size={14} className="text-emerald-500" /> <span className="text-xs font-bold text-slate-400 uppercase">Ganhos</span></div>
                     <span className="text-xl font-bold text-emerald-600">{formatCurrency(totalEarnings)}</span>
                 </div>
-                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm cursor-pointer active:scale-95 transition-transform hover:bg-red-50" onClick={onAddExpense}>
                     <div className="flex items-center gap-2 mb-2"><TrendingDown size={14} className="text-red-500" /> <span className="text-xs font-bold text-slate-400 uppercase">Despesas</span></div>
                     <span className="text-xl font-bold text-red-500">{formatCurrency(totalExpenses)}</span>
                 </div>
@@ -638,7 +678,7 @@ export default function DriverMindApp() {
     if (!user) return <LoginView onSuccess={() => { }} />;
 
     const renderContent = () => {
-        if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} />;
+        if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={handleTabChange} />;
         if (activeTab === 'history') return <HistoryView userId={user.id} />;
         if (activeTab === 'vehicles') return <VehiclesView userId={user.id} activeVehicleId={activeVehicleId} setActiveVehicleId={setActiveVehicleId} />;
         if (activeTab === 'profile') return (
@@ -706,12 +746,12 @@ export default function DriverMindApp() {
 
 // --- Wrappers for data fetching ---
 
-const TodayWrapper = ({ userId, vehicleId }: { userId: string, vehicleId: string | null }) => {
+const TodayWrapper = ({ userId, vehicleId, onTabChange }: { userId: string, vehicleId: string | null, onTabChange: (tab: string) => void }) => {
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     useEffect(() => {
         if (vehicleId) supabase.from('vehicles').select('*').eq('id', vehicleId).single().then(({ data }) => setVehicle(data));
     }, [vehicleId]);
-    return <TodayView userId={userId} vehicle={vehicle} />;
+    return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} />;
 }
 
 const TransactionWrapper = ({ userId, vehicleId, type, onBack }: any) => {
