@@ -121,47 +121,230 @@ const Input = ({ label, error, icon, ...props }: any) => (
  * ============================================================================
  */
 
-// --- LOGIN ---
-const LoginView = ({ onSuccess }: { onSuccess: () => void }) => {
+// --- LANDING PAGE ---
+const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () => void }) => {
+    return (
+        <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden flex flex-col">
+            {/* Background Decor */}
+            {/* Background Effects */}
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-900/40 to-transparent pointer-events-none"></div>
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div className="absolute top-40 -left-20 w-72 h-72 bg-blue-600/20 rounded-full blur-[100px]"></div>
+
+            <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-12 pb-6">
+                {/* Header / Logo */}
+                <div className="flex items-center gap-2 mb-8 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
+                    <Car className="text-emerald-400 w-5 h-5" />
+                    <span className="font-bold text-sm tracking-widest uppercase text-slate-200">Driver Mind</span>
+                </div>
+
+                {/* Hero Section */}
+                <div className="text-center mb-10 max-w-lg mx-auto">
+                    <h1 className="text-5xl font-extrabold tracking-tight mb-4 leading-[1.1]">
+                        Pare de pagar <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">para trabalhar.</span>
+                    </h1>
+                    <p className="text-slate-400 text-lg leading-relaxed">
+                        90% dos motoristas não sabem seu lucro real. O <strong>Driver Mind</strong> é a inteligência que coloca dinheiro no seu bolso.
+                    </p>
+                </div>
+
+                {/* Visual Hook / Cards */}
+                <div className="w-full max-w-sm relative mb-12">
+                    {/* Floating Card 1 */}
+                    <div className="absolute -left-4 top-10 bg-[#1E293B] p-4 rounded-2xl shadow-2xl border border-slate-700/50 transform -rotate-6 animate-in slide-in-from-left duration-700">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-red-500/20 p-2 rounded-lg text-red-500"><Fuel size={20} /></div>
+                            <div>
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Gasto Real</div>
+                                <div className="text-white font-bold">-R$ 850,00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Floating Card 2 (Hero) */}
+                    <div className="bg-[#1E293B]/80 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-indigo-500/30 relative z-10 transform translate-y-2">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <div className="text-xs text-slate-400 uppercase font-bold mb-1">Lucro da Semana</div>
+                                <div className="text-3xl font-bold text-emerald-400">R$ 1.240,50</div>
+                            </div>
+                            <div className="bg-emerald-500/20 p-2 rounded-xl text-emerald-400">
+                                <TrendingUp size={24} />
+                            </div>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 w-[75%]"></div>
+                        </div>
+                        <div className="mt-2 text-[10px] text-slate-500 text-right">Meta: 75% atingida</div>
+                    </div>
+
+                    {/* Floating Card 3 */}
+                    <div className="absolute -right-4 bottom-10 bg-[#1E293B] p-4 rounded-2xl shadow-2xl border border-slate-700/50 transform rotate-6 animate-in slide-in-from-right duration-1000">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-500/20 p-2 rounded-lg text-blue-500"><Car size={20} /></div>
+                            <div>
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Custo / KM</div>
+                                <div className="text-white font-bold">R$ 0,85</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Social Proof */}
+                <div className="flex items-center gap-2 mb-8 bg-white/5 py-2 px-4 rounded-xl">
+                    <div className="flex -space-x-2">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className={`w-6 h-6 rounded-full border-2 border-[#1E293B] bg-slate-400 flex items-center justify-center text-[8px] font-bold text-slate-800`}>U{i}</div>
+                        ))}
+                    </div>
+                    <span className="text-xs text-slate-300">Usado por <strong>+1.200</strong> motoristas</span>
+                </div>
+
+                {/* CTA / Actions */}
+                <div className="w-full max-w-sm space-y-4">
+                    <button
+                        onClick={onSignup}
+                        className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_50px_rgba(16,185,129,0.6)] transform hover:scale-[1.02] transition-all active:scale-95 relative overflow-hidden group"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            TESTAR GRÁTIS POR 7 DIAS <ChevronRight size={20} />
+                        </span>
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    </button>
+
+                    <button onClick={onLogin} className="w-full py-3 text-slate-400 font-medium hover:text-white transition-colors">
+                        Já tenho uma conta
+                    </button>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 text-center border-t border-white/5 bg-[#0B1120]">
+                <p className="text-[10px] text-slate-500">
+                    &copy; 2026 Driver Mind. Cancele quando quiser.
+                </p>
+            </div>
+        </div>
+    );
+};
+
+// --- SALES VIEW (TRIAL EXPIRED) ---
+const SalesView = ({ onSubscribe, onLogout }: any) => {
+    return (
+        <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden flex flex-col items-center justify-center p-6 text-center">
+            {/* Background Effects */}
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-red-900/40 to-transparent pointer-events-none"></div>
+
+            <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                <Lock size={40} className="text-red-500" />
+            </div>
+
+            <h1 className="text-3xl font-bold mb-2">Seu teste acabou!</h1>
+            <p className="text-slate-400 mb-8 max-w-xs mx-auto">
+                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, ative sua assinatura.
+            </p>
+
+            <div className="bg-[#1E293B] p-6 rounded-3xl border border-indigo-500/30 shadow-2xl w-full max-w-sm relative overflow-hidden mb-8">
+                <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-500 to-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+                    OFERTA ESPECIAL
+                </div>
+                <div className="text-sm text-slate-400 uppercase font-bold mb-2">Driver Mind Pro</div>
+                <div className="flex items-end justify-center gap-1 mb-2">
+                    <span className="text-4xl font-bold text-white">12x R$ 5,99</span>
+                </div>
+                <div className="text-[10px] text-slate-500 mb-6">ou R$ 59,90 à vista</div>
+
+                <ul className="text-left space-y-3 mb-6 text-sm text-slate-300">
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Controle de Ganhos e Gastos</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Relatórios de Lucro Real</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Cálculo de Custo por KM</li>
+                </ul>
+
+                <button
+                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform"
+                    onClick={onSubscribe}
+                >
+                    QUERO CONTINUAR LUCRANDO
+                </button>
+            </div>
+
+            <button onClick={onLogout} className="text-slate-500 text-sm hover:text-white transition-colors">
+                Sair da conta
+            </button>
+        </div>
+    );
+};
+
+// --- AUTH (LOGIN/SIGNUP) ---
+const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', onBack: () => void }) => {
+    const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) setError(error.message);
-        else onSuccess();
-
-        setLoading(false);
+        try {
+            if (mode === 'signup') {
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) throw error;
+                alert('Cadastro realizado! Verifique seu e-mail para confirmar.');
+                setMode('login'); // Switch to login after signup attempt
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="min-h-screen flex flex-col justify-center p-6 bg-slate-50">
-            <div className="mb-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-200">
-                    <Car className="text-white w-10 h-10" />
+            <Button variant="ghost" className="absolute top-6 left-4 !w-10 !h-10 !p-0 rounded-full border border-slate-200" onClick={onBack}>
+                <ArrowRight className="rotate-180" />
+            </Button>
+
+            <div className="mb-8 text-center mt-10">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+                    <Car className="text-indigo-600 w-8 h-8" />
                 </div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">DriverFlow Pro 2.0</h1>
-                <p className="text-slate-500">Gestão Profissional</p>
-                <p className="text-[10px] text-slate-300 mt-2 font-mono max-w-[200px] break-all mx-auto">
-                    Debug: {process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 15) || 'MISSING'}...
+                <h1 className="text-2xl font-bold text-slate-900 mb-1">
+                    {mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta'}
+                </h1>
+                <p className="text-slate-500 text-sm">
+                    {mode === 'login' ? 'Entre para gerenciar seus ganhos.' : 'Teste 7 dias grátis.'}
                 </p>
             </div>
+
             <Card className="mb-6">
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={handleAuth} className="space-y-4">
                     <Input label="E-mail" value={email} onChange={(e: any) => setEmail(e.target.value)} type="email" icon={<Mail size={20} />} required />
                     <Input label="Senha" value={password} onChange={(e: any) => setPassword(e.target.value)} type="password" icon={<Lock size={20} />} required />
 
                     {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-center gap-2"><AlertCircle size={16} /> {error}</div>}
 
-                    <Button fullWidth size="lg" disabled={loading}>{loading ? 'Entrando...' : 'Acessar Conta'}</Button>
+                    <Button fullWidth size="lg" disabled={loading}>
+                        {loading ? 'Processando...' : (mode === 'login' ? 'Entrar' : 'Cadastrar Grátis')}
+                    </Button>
                 </form>
             </Card>
+
+            <div className="text-center">
+                <button
+                    onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
+                    className="text-sm text-slate-500 font-medium hover:text-indigo-600 transition-colors"
+                >
+                    {mode === 'login' ? 'Não tem conta? Teste Grátis' : 'Já tem conta? Fazer Login'}
+                </button>
+            </div>
         </div>
     );
 };
@@ -677,8 +860,26 @@ export default function DriverMindApp() {
         setIsMenuOpen(false);
     };
 
-    if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-medium">Carregando DriverFlow...</div>;
-    if (!user) return <LoginView onSuccess={() => { }} />;
+    const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
+
+    if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-medium">Carregando Driver Mind...</div>;
+
+    if (!user) {
+        if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
+        return <AuthView initialMode={authView === 'signup' ? 'signup' : 'login'} onBack={() => setAuthView('landing')} />;
+    }
+
+    // CHECK TRIAL EXPIRATION
+    const TRIAL_DAYS = 7;
+    const daysSinceCreation = user.created_at ? Math.floor((new Date().getTime() - new Date(user.created_at).getTime()) / (1000 * 3600 * 24)) : 0;
+
+    // Check both app_metadata (secure) and user_metadata (dashboard editable)
+    const isPro = user.app_metadata?.subscription_status === 'active' || user.user_metadata?.subscription_status === 'active';
+    const isTrialExpired = daysSinceCreation > TRIAL_DAYS && !isPro;
+
+    if (isTrialExpired) {
+        return <SalesView onSubscribe={() => alert('Fluxo de pagamento em desenvolvimento...')} onLogout={() => supabase.auth.signOut()} />;
+    }
 
     const renderContent = () => {
         if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={handleTabChange} />;
