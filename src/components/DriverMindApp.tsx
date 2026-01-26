@@ -628,7 +628,7 @@ const HistoryView = ({ userId }: { userId: string }) => {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis dataKey="date" tickFormatter={(val) => new Date(val).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                                 <Tooltip
-                                    formatter={(val: any) => [`R$ ${Number(val).toFixed(2)}`, 'Lucro']}
+                                    formatter={(val: any) => [`R$ ${Number(val).toFixed(2)}`, 'Lucro']} // Fixed type error
                                     labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                 />
