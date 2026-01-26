@@ -1,11 +1,10 @@
 
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase-server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-01-27.acacia', // Latest API version
+    apiVersion: '2025-12-15.clover', // Updated to match installed package
 });
 
 export async function POST(req: Request) {
@@ -13,8 +12,7 @@ export async function POST(req: Request) {
         const { priceId } = await req.json();
 
         // 1. Get the user from Supabase Auth
-        const cookieStore = cookies();
-        const supabase = createClient(cookieStore);
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
