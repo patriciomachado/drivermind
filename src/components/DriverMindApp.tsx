@@ -817,6 +817,21 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
 
     // handleEndDay moved to FinishDayView
 
+    const handleReopenDay = async () => {
+        if (!session) return;
+
+        const { error } = await supabase
+            .from('work_days')
+            .update({ status: 'open', km_end: null })
+            .eq('id', session.id);
+
+        if (error) {
+            alert('Erro ao reabrir dia: ' + error.message);
+        } else {
+            fetchData();
+        }
+    };
+
 
     // Calculate
     const totalEarnings = earnings.reduce((a, b) => a + b.amount, 0);
@@ -861,9 +876,15 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                         Trabalhando com {vehicle.name}
                     </p>
                 </div>
-                <button onClick={onFinishDay} className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">
-                    Encerrar Dia
-                </button>
+                {session.status === 'closed' ? (
+                    <button onClick={handleReopenDay} className="text-xs font-bold text-emerald-600 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100">
+                        Reabrir Dia
+                    </button>
+                ) : (
+                    <button onClick={onFinishDay} className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">
+                        Encerrar Dia
+                    </button>
+                )}
             </div>
 
             {/* GOAL CARD (NEW) */}
