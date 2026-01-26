@@ -701,7 +701,7 @@ const HistoryView = ({ userId }: { userId: string }) => {
 };
 
 // --- CORE: TODAY BOARD ---
-const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, user }: { vehicle: Vehicle | null, userId: string, onAddEarning: () => void, onAddExpense: () => void, user: User }) => {
+const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, user }: { vehicle: Vehicle | null, userId: string, onAddEarning: () => void, onAddExpense: () => void, onFinishDay: () => void, user: User }) => {
     const [session, setSession] = useState<WorkDay | null>(null);
     const [earnings, setEarnings] = useState<Earning[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -787,16 +787,8 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, user }: { vehi
         }
     };
 
-    const handleEndDay = async () => {
-        if (!session || !kmEnd) return;
-        const { error } = await supabase.from('work_days').update({ status: 'closed', km_end: parseFloat(kmEnd) }).eq('id', session.id);
+    // handleEndDay moved to FinishDayView
 
-        if (error) {
-            alert(`Erro ao finalizar dia: ${error.message}`);
-        } else {
-            fetchData();
-        }
-    };
 
     // Calculate
     const totalEarnings = earnings.reduce((a, b) => a + b.amount, 0);
@@ -841,7 +833,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, user }: { vehi
                         Trabalhando com {vehicle.name}
                     </p>
                 </div>
-                <button onClick={handleEndDay} className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">
+                <button onClick={onFinishDay} className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">
                     Encerrar Dia
                 </button>
             </div>
@@ -917,12 +909,21 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, user }: { vehi
             </div>
 
             {session.status === 'open' ? (
-                <Card title="Finalizar Dia">
-                    <div className="flex gap-2">
-                        <Input placeholder="Km Final" type="number" value={kmEnd} onChange={(e: any) => setKmEnd(e.target.value)} />
-                        <Button onClick={handleEndDay} disabled={!kmEnd} className="w-14 items-center !px-0"><CheckCircle2 /></Button>
+                <button
+                    onClick={onFinishDay}
+                    className="w-full bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-between shadow-xl mt-6 active:scale-95 transition-transform"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500 rounded-xl text-white">
+                            <CheckCircle2 size={24} />
+                        </div>
+                        <div className="text-left">
+                            <div className="font-bold text-lg">Encerrar Dia</div>
+                            <div className="text-xs text-slate-400">Finalizar expediente e KM</div>
+                        </div>
                     </div>
-                </Card>
+                    <ChevronRight className="text-slate-500" />
+                </button>
             ) : (
                 <Card>
                     <div className="flex flex-col gap-2">
@@ -965,7 +966,7 @@ const AddTransactionView = ({ type, session, onBack }: any) => {
             { name: 'Uber', label: 'Uber', icon: <MapPin size={20} /> },
             { name: '99', label: '99', icon: <MapPin size={20} /> },
             { name: 'InDrive', label: 'InDrive', icon: <MapPin size={20} /> },
-            { name: 'Particular', label: 'Particular', icon: <Wallet size={20} /> }
+            { name: 'Por fora', label: 'Particular', icon: <Wallet size={20} /> }
         ]
     };
 
@@ -1041,6 +1042,68 @@ const AddTransactionView = ({ type, session, onBack }: any) => {
     );
 };
 
+const FinishDayView = ({ userId, vehicleId, onBack }: any) => {
+    const [session, setSession] = useState<WorkDay | null>(null);
+    const [kmEnd, setKmEnd] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [initLoading, setInitLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+            if (!vehicleId) return;
+            const today = getTodayISODateLocal();
+            const { data } = await supabase.from('work_days').select('*').eq('vehicle_id', vehicleId).eq('date', today).eq('status', 'open').maybeSingle();
+            setSession(data);
+            setInitLoading(false);
+        };
+        fetchSession();
+    }, [vehicleId]);
+
+    const handleConfirm = async () => {
+        if (!session || !kmEnd) return;
+        setLoading(true);
+        const { error } = await supabase.from('work_days').update({ status: 'closed', km_end: parseFloat(kmEnd) }).eq('id', session.id);
+        if (error) {
+            alert(`Erro ao finalizar: ${error.message}`);
+            setLoading(false);
+        } else {
+            onBack();
+        }
+    };
+
+    if (initLoading) return <div className="p-10 text-center">Carregando...</div>;
+    if (!session) return (
+        <div className="p-10 text-center flex flex-col items-center justify-center h-full">
+            <AlertCircle size={48} className="text-amber-500 mb-4" />
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Dia Não Iniciado</h3>
+            <p className="text-slate-500 mb-8 max-w-[200px]">Você já finalizou o dia ou ele não foi aberto.</p>
+            <Button onClick={onBack}>Voltar</Button>
+        </div>
+    );
+
+    return (
+        <div className="p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="flex gap-4 items-center">
+                <Button variant="ghost" className="!w-10 !h-10 !p-0 rounded-full border border-slate-200" onClick={onBack}><ArrowRight className="rotate-180" /></Button>
+                <h2 className="text-xl font-bold text-slate-900">Encerrar Dia</h2>
+            </div>
+
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100/50 shadow-sm text-center relative overflow-hidden">
+                <div className={`absolute top-0 left-0 right-0 h-1.5 bg-slate-900`}></div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">KM Final</label>
+                <div className={`flex justify-center items-center text-5xl font-bold text-slate-800 mt-4`}>
+                    <input autoFocus type="number" inputMode="decimal" value={kmEnd} onChange={(e) => setKmEnd(e.target.value)} className="w-40 bg-transparent outline-none text-center placeholder:text-slate-200" placeholder="00000" />
+                </div>
+                <p className="text-xs text-slate-400 mt-2">KM Inicial: {session.km_start}</p>
+            </div>
+
+            <Button fullWidth size="lg" onClick={handleConfirm} disabled={!kmEnd || loading} className="bg-slate-900 hover:bg-slate-800 text-white">
+                {loading ? 'Finalizando...' : 'Confirmar Encerramento'}
+            </Button>
+        </div>
+    );
+};
+
 /**
  * ============================================================================
  * MAIN COMPONENT
@@ -1067,8 +1130,23 @@ export default function DriverMindApp() {
 
     // Load/Save active vehicle preference
     useEffect(() => {
-        if (user) { const saved = localStorage.getItem(`active_vehicle_${user.id}`); if (saved) setActiveVehicleId(saved); }
+        const init = async () => {
+            if (!user) return;
+            // 1. Try local storage
+            const saved = localStorage.getItem(`active_vehicle_${user.id}`);
+            if (saved) {
+                setActiveVehicleId(saved);
+            } else {
+                // 2. If no saved vehicle, check if user has ANY vehicles
+                const { count } = await supabase.from('vehicles').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+                if (count && count > 0) {
+                    setActiveTab('vehicles'); // Force garage if he has cars but none selected
+                }
+            }
+        };
+        init();
     }, [user]);
+
     useEffect(() => {
         if (user && activeVehicleId) localStorage.setItem(`active_vehicle_${user.id}`, activeVehicleId);
     }, [activeVehicleId, user]);
@@ -1119,10 +1197,13 @@ export default function DriverMindApp() {
         if (activeTab === 'add-expense' || activeTab === 'add-earning') {
             return <TransactionWrapper userId={user.id} vehicleId={activeVehicleId} type={activeTab === 'add-expense' ? 'expense' : 'earning'} onBack={() => setActiveTab('today')} />
         }
+        if (activeTab === 'finish-day') {
+            return <FinishDayWrapper userId={user.id} vehicleId={activeVehicleId} onBack={() => setActiveTab('today')} />
+        }
         return renderContent();
     };
 
-    const showNav = !['add-expense', 'add-earning'].includes(activeTab);
+    const showNav = !['add-expense', 'add-earning', 'finish-day'].includes(activeTab);
 
     return (
         <SecurityWrapper>
@@ -1194,7 +1275,11 @@ const TodayWrapper = ({ userId, vehicleId, onTabChange, user }: { userId: string
     useEffect(() => {
         if (vehicleId) supabase.from('vehicles').select('*').eq('id', vehicleId).single().then(({ data }) => setVehicle(data));
     }, [vehicleId]);
-    return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} user={user} />;
+    return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} onFinishDay={() => onTabChange('finish-day')} user={user} />;
+}
+
+const FinishDayWrapper = ({ userId, vehicleId, onBack }: any) => {
+    return <FinishDayView userId={userId} vehicleId={vehicleId} onBack={onBack} />;
 }
 
 const TransactionWrapper = ({ userId, vehicleId, type, onBack }: any) => {
