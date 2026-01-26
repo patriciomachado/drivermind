@@ -29,6 +29,7 @@ type Vehicle = {
 
 type WorkDay = {
     id: string;
+    user_id: string;
     vehicle_id: string;
     date: string;
     km_start: number;
@@ -77,9 +78,15 @@ const getTodayISODateLocal = () => {
  * ============================================================================
  */
 
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost' | 'glass';
+    size?: 'sm' | 'md' | 'lg';
+    fullWidth?: boolean;
+}
+
 const Button = ({
     children, onClick, variant = 'primary', className = '', disabled = false, size = 'md', fullWidth = false
-}: any) => {
+}: ButtonProps) => {
     const baseStyle = "font-medium rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed";
     const variants: any = {
         primary: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40",
@@ -98,14 +105,20 @@ const Button = ({
     );
 };
 
-const Card = ({ children, className = '', title, onClick }: any) => (
+const Card = ({ children, className = '', title, onClick }: { children: React.ReactNode, className?: string, title?: string, onClick?: () => void }) => (
     <div onClick={onClick} className={`bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 ${onClick ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''} ${className}`}>
         {title && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{title}</h3>}
         {children}
     </div>
 );
 
-const Input = ({ label, error, icon, ...props }: any) => (
+interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+    label?: string;
+    error?: string;
+    icon?: React.ReactNode;
+}
+
+const Input = ({ label, error, icon, ...props }: CustomInputProps) => (
     <div className="w-full">
         {label && <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">{label}</label>}
         <div className="relative">
@@ -352,10 +365,10 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
             <Card className="mb-6">
                 <form onSubmit={handleAuth} className="space-y-4">
                     {mode === 'signup' && (
-                        <Input label="Nome Completo" value={name} onChange={(e: any) => setName(e.target.value)} type="text" icon={<UserIcon size={20} />} required />
+                        <Input label="Nome Completo" value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} type="text" icon={<UserIcon size={20} />} required />
                     )}
-                    <Input label="E-mail" value={email} onChange={(e: any) => setEmail(e.target.value)} type="email" icon={<Mail size={20} />} required />
-                    <Input label="Senha" value={password} onChange={(e: any) => setPassword(e.target.value)} type="password" icon={<Lock size={20} />} required />
+                    <Input label="E-mail" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} type="email" icon={<Mail size={20} />} required />
+                    <Input label="Senha" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} type="password" icon={<Lock size={20} />} required />
 
                     {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-center gap-2"><AlertCircle size={16} /> {error}</div>}
 
@@ -431,9 +444,9 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             {isAdding && (
                 <Card>
                     <div className="space-y-4">
-                        <Input label="Apelido" value={newVehicle.name} onChange={(e: any) => setNewVehicle({ ...newVehicle, name: e.target.value })} autoFocus placeholder="Ex: Onix Prata" />
-                        <Input label="Modelo" value={newVehicle.model} onChange={(e: any) => setNewVehicle({ ...newVehicle, model: e.target.value })} placeholder="Ex: Onix LTZ" />
-                        <Input label="Placa" value={newVehicle.plate} onChange={(e: any) => setNewVehicle({ ...newVehicle, plate: e.target.value })} placeholder="ABC-1234" />
+                        <Input label="Apelido" value={newVehicle.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, name: e.target.value })} autoFocus placeholder="Ex: Onix Prata" />
+                        <Input label="Modelo" value={newVehicle.model} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, model: e.target.value })} placeholder="Ex: Onix LTZ" />
+                        <Input label="Placa" value={newVehicle.plate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, plate: e.target.value })} placeholder="ABC-1234" />
                         <Button fullWidth onClick={handleSubmit}>Salvar</Button>
                     </div>
                 </Card>
@@ -457,7 +470,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 };
 
 // --- HISTORY DETAIL MODAL (NEW) ---
-const HistoryDetailModal = ({ day, vehicles, onClose }: any) => {
+const HistoryDetailModal = ({ day, vehicles, onClose }: { day: any, vehicles: Record<string, string>, onClose: () => void }) => {
     if (!day) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
@@ -829,7 +842,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
 
                 <Card>
                     <div className="text-left space-y-4">
-                        <Input label="KM Inicial" type="number" value={kmStart} onChange={(e: any) => setKmStart(e.target.value)} placeholder="00000" />
+                        <Input label="KM Inicial" type="number" value={kmStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKmStart(e.target.value)} placeholder="00000" />
                         <Button fullWidth onClick={handleStartDay}>Iniciar Dia</Button>
                     </div>
                 </Card>
@@ -958,7 +971,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
 };
 
 // --- REGISTER MODALS ---
-const AddTransactionView = ({ type, session, onBack }: any) => {
+const AddTransactionView = ({ type, session, onBack }: { type: 'expense' | 'earning', session: WorkDay | null, onBack: () => void }) => {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState({ name: 'abastecimento', label: 'Combustível', type: 'expense' }); // default
     const [loading, setLoading] = useState(false);
@@ -1057,7 +1070,7 @@ const AddTransactionView = ({ type, session, onBack }: any) => {
     );
 };
 
-const FinishDayView = ({ userId, vehicleId, onBack }: any) => {
+const FinishDayView = ({ userId, vehicleId, onBack }: { userId: string, vehicleId: string, onBack: () => void }) => {
     const [session, setSession] = useState<WorkDay | null>(null);
     const [kmEnd, setKmEnd] = useState('');
     const [loading, setLoading] = useState(false);
@@ -1107,7 +1120,7 @@ const FinishDayView = ({ userId, vehicleId, onBack }: any) => {
                 <div className={`absolute top-0 left-0 right-0 h-1.5 bg-slate-900`}></div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">KM Final</label>
                 <div className={`flex justify-center items-center text-5xl font-bold text-slate-800 mt-4`}>
-                    <input autoFocus type="number" inputMode="decimal" value={kmEnd} onChange={(e) => setKmEnd(e.target.value)} className="w-40 bg-transparent outline-none text-center placeholder:text-slate-200" placeholder="00000" />
+                    <input autoFocus type="number" inputMode="decimal" value={kmEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKmEnd(e.target.value)} className="w-40 bg-transparent outline-none text-center placeholder:text-slate-200" placeholder="00000" />
                 </div>
                 <p className="text-xs text-slate-400 mt-2">KM Inicial: {session.km_start}</p>
             </div>
@@ -1297,7 +1310,7 @@ const FinishDayWrapper = ({ userId, vehicleId, onBack }: any) => {
     return <FinishDayView userId={userId} vehicleId={vehicleId} onBack={onBack} />;
 }
 
-const TransactionWrapper = ({ userId, vehicleId, type, onBack }: any) => {
+const TransactionWrapper = ({ userId, vehicleId, type, onBack }: { userId: string, vehicleId: string | null, type: 'expense' | 'earning', onBack: () => void }) => {
     const [session, setSession] = useState<WorkDay | null>(null);
     useEffect(() => {
         const fetchSess = async () => {
@@ -1311,9 +1324,9 @@ const TransactionWrapper = ({ userId, vehicleId, type, onBack }: any) => {
     return <AddTransactionView type={type} session={session} onBack={onBack} />
 }
 
-const NavIcon = ({ icon, label, active, onClick }: any) => (
+const NavIcon = ({ icon, label, active, onClick }: { icon: React.ReactElement, label: string, active: boolean, onClick: () => void }) => (
     <button onClick={onClick} className={`flex flex-col items-center gap-1 ${active ? 'text-indigo-600' : 'text-slate-400'}`}>
-        {React.cloneElement(icon, { size: 24, strokeWidth: active ? 2.5 : 2 })}
+        {React.cloneElement(icon as any, { size: 24, strokeWidth: active ? 2.5 : 2 })}
         <span className="text-[10px] font-bold">{label}</span>
     </button>
 )
