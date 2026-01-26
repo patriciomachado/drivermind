@@ -266,8 +266,23 @@ const SalesView = ({ onSubscribe, onLogout }: any) => {
                 </ul>
 
                 <button
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform"
-                    onClick={onSubscribe}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={async () => {
+                        try {
+                            const res = await fetch('/api/checkout', {
+                                method: 'POST',
+                                body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID })
+                            });
+                            const data = await res.json();
+                            if (data.url) {
+                                window.location.href = data.url;
+                            } else {
+                                alert('Erro ao iniciar pagamento. Tente novamente.');
+                            }
+                        } catch (err) {
+                            alert('Erro de conexão. Verifique sua intenet.');
+                        }
+                    }}
                 >
                     QUERO CONTINUAR LUCRANDO
                 </button>
