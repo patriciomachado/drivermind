@@ -2,7 +2,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2025-12-15.clover',
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
             console.log(`💰 Payment received from ${userId}. Unlocking access...`);
 
             // 1. Update user metadata as 'active' (Pro)
+            const supabaseAdmin = getSupabaseAdmin();
             const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
                 user_metadata: { subscription_status: 'active' },
                 app_metadata: { subscription_status: 'active' } // Secure field
