@@ -445,9 +445,9 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 const HistoryDetailModal = ({ day, vehicles, onClose }: any) => {
     if (!day) return null;
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
-                <div className="bg-slate-900 p-6 text-white relative">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                <div className="bg-slate-900 p-6 text-white relative shrink-0">
                     <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
                         <X size={20} />
                     </button>
@@ -465,7 +465,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose }: any) => {
                     </div>
                 </div>
 
-                <div className="max-h-[60vh] overflow-y-auto p-6 space-y-6">
+                <div className="overflow-y-auto p-6 space-y-6 flex-1">
                     {/* Earnings */}
                     <div>
                         <h4 className="flex items-center gap-2 font-bold text-slate-700 mb-3 text-sm">
@@ -503,7 +503,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose }: any) => {
                         </div>
                     </div>
                 </div>
-                <div className="p-4 border-t border-slate-100">
+                <div className="p-4 border-t border-slate-100 shrink-0">
                     <Button fullWidth variant="outline" onClick={onClose}>Fechar</Button>
                 </div>
             </div>
