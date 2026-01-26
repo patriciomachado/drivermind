@@ -5,8 +5,12 @@ import { createClient } from '@/lib/supabase';
 import {
     Car, Fuel, Wallet, MapPin, Plus, Trash2, LogOut, ChevronRight,
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
-    TrendingUp, ArrowRight, Lock, Mail, LogIn, Calendar, TrendingDown
+    TrendingUp, ArrowRight, Lock, Mail, LogIn, Calendar, TrendingDown, X, Target, Edit2, BarChart3, Download, User as UserIcon
 } from 'lucide-react';
+import SecurityWrapper from './SecurityWrapper';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import type { User } from '@supabase/supabase-js';
 
 /**
@@ -134,7 +138,7 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
             <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-12 pb-6">
                 {/* Header / Logo */}
                 <div className="flex items-center gap-2 mb-8 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
-                    <Car className="text-emerald-400 w-5 h-5" />
+                    <img src="/logo.png" className="w-8 h-8 rounded-full border border-white/20" alt="Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                     <span className="font-bold text-sm tracking-widest uppercase text-slate-200">Driver Mind</span>
                 </div>
 
@@ -167,7 +171,7 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
                         <div className="flex justify-between items-center mb-4">
                             <div>
                                 <div className="text-xs text-slate-400 uppercase font-bold mb-1">Lucro da Semana</div>
-                                <div className="text-3xl font-bold text-emerald-400">R$ 1.240,50</div>
+                                <div className="text-3xl font-bold text-emerald-400">R$ 1.890,74</div>
                             </div>
                             <div className="bg-emerald-500/20 p-2 rounded-xl text-emerald-400">
                                 <TrendingUp size={24} />
@@ -281,6 +285,7 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
     const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -291,7 +296,12 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
 
         try {
             if (mode === 'signup') {
-                const { error } = await supabase.auth.signUp({ email, password });
+                if (!name) throw new Error('Nome é obrigatório.');
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: name } }
+                });
                 if (error) throw error;
                 alert('Cadastro realizado! Verifique seu e-mail para confirmar.');
                 setMode('login'); // Switch to login after signup attempt
@@ -313,8 +323,8 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
             </Button>
 
             <div className="mb-8 text-center mt-10">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
-                    <Car className="text-indigo-600 w-8 h-8" />
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 overflow-hidden relative">
+                    <img src="/logo.png" className="w-full h-full object-cover" alt="Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                 </div>
                 <h1 className="text-2xl font-bold text-slate-900 mb-1">
                     {mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta'}
@@ -326,6 +336,9 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
 
             <Card className="mb-6">
                 <form onSubmit={handleAuth} className="space-y-4">
+                    {mode === 'signup' && (
+                        <Input label="Nome Completo" value={name} onChange={(e: any) => setName(e.target.value)} type="text" icon={<UserIcon size={20} />} required />
+                    )}
                     <Input label="E-mail" value={email} onChange={(e: any) => setEmail(e.target.value)} type="email" icon={<Mail size={20} />} required />
                     <Input label="Senha" value={password} onChange={(e: any) => setPassword(e.target.value)} type="password" icon={<Lock size={20} />} required />
 
@@ -428,11 +441,83 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     );
 };
 
+// --- HISTORY DETAIL MODAL (NEW) ---
+const HistoryDetailModal = ({ day, vehicles, onClose }: any) => {
+    if (!day) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
+                <div className="bg-slate-900 p-6 text-white relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
+                        <X size={20} />
+                    </button>
+                    <h3 className="text-lg font-bold">Detalhes do Dia</h3>
+                    <p className="text-slate-400 text-sm">
+                        {new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' })}
+                    </p>
+                    <div className="mt-4 flex gap-4">
+                        <div>
+                            <div className="text-[10px] text-slate-400 uppercase font-bold">Lucro Líquido</div>
+                            <div className={`text-2xl font-bold ${day.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {formatCurrency(day.profit)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-h-[60vh] overflow-y-auto p-6 space-y-6">
+                    {/* Earnings */}
+                    <div>
+                        <h4 className="flex items-center gap-2 font-bold text-slate-700 mb-3 text-sm">
+                            <TrendingUp size={16} className="text-emerald-500" /> Ganhos
+                        </h4>
+                        <div className="space-y-2">
+                            {day.earnings && day.earnings.length > 0 ? (
+                                day.earnings.map((e: any) => (
+                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <span className="font-medium text-slate-600">{e.platform}</span>
+                                        <span className="font-bold text-emerald-600">{formatCurrency(e.amount)}</span>
+                                    </div>
+                                ))
+                            ) : <p className="text-xs text-slate-400 italic">Nenhum ganho registrado.</p>}
+                        </div>
+                    </div>
+
+                    {/* Expenses */}
+                    <div>
+                        <h4 className="flex items-center gap-2 font-bold text-slate-700 mb-3 text-sm">
+                            <TrendingDown size={16} className="text-red-500" /> Despesas
+                        </h4>
+                        <div className="space-y-2">
+                            {day.expenses && day.expenses.length > 0 ? (
+                                day.expenses.map((e: any) => (
+                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-slate-600 capitalize">{e.category}</span>
+                                            {e.note && <span className="text-[10px] text-slate-400">{e.note}</span>}
+                                        </div>
+                                        <span className="font-bold text-red-500">{formatCurrency(e.amount)}</span>
+                                    </div>
+                                ))
+                            ) : <p className="text-xs text-slate-400 italic">Nenhuma despesa registrada.</p>}
+                        </div>
+                    </div>
+                </div>
+                <div className="p-4 border-t border-slate-100">
+                    <Button fullWidth variant="outline" onClick={onClose}>Fechar</Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- HISTORY VIEW ---
 const HistoryView = ({ userId }: { userId: string }) => {
     const [history, setHistory] = useState<any[]>([]);
     const [vehicles, setVehicles] = useState<Record<string, string>>({});
+    const [selectedDay, setSelectedDay] = useState<any>(null); // For Detail Modal
     const [loading, setLoading] = useState(true);
+    const [showChart, setShowChart] = useState(false);
 
     const fetchHistory = async () => {
         // Fetch vehicles for mapping
@@ -441,11 +526,11 @@ const HistoryView = ({ userId }: { userId: string }) => {
         vParams?.forEach((v: any) => { vMap[v.id] = v.name });
         setVehicles(vMap);
 
-        const { data: days } = await supabase.from('work_days').select('*').eq('status', 'closed').order('date', { ascending: false });
+        const { data: days } = await supabase.from('work_days').select('*').eq('user_id', userId).eq('status', 'closed').order('date', { ascending: false });
         if (!days) { setLoading(false); return; }
 
-        const { data: earns } = await supabase.from('earnings').select('*');
-        const { data: exps } = await supabase.from('expenses').select('*');
+        const { data: earns } = await supabase.from('earnings').select('*').in('work_day_id', days.map(d => d.id));
+        const { data: exps } = await supabase.from('expenses').select('*').in('work_day_id', days.map(d => d.id));
 
         const compiled = days.map(d => {
             const dayEarns = earns?.filter(e => e.work_day_id === d.id) || [];
@@ -454,6 +539,8 @@ const HistoryView = ({ userId }: { userId: string }) => {
             const totalCost = dayExps.reduce((a, b) => a + b.amount, 0);
             return {
                 ...d,
+                earnings: dayEarns,
+                expenses: dayExps,
                 income: totalInc,
                 expense: totalCost,
                 profit: totalInc - totalCost
@@ -464,6 +551,32 @@ const HistoryView = ({ userId }: { userId: string }) => {
     };
 
     useEffect(() => { fetchHistory(); }, [userId]);
+
+    const exportPDF = () => {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Relatório Driver Mind", 14, 20);
+        doc.setFontSize(10);
+        doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
+
+        const tableData = history.map(day => [
+            new Date(day.date).toLocaleDateString('pt-BR'),
+            vehicles[day.vehicle_id] || '-',
+            formatCurrency(day.income),
+            formatCurrency(day.expense),
+            formatCurrency(day.profit),
+            (day.km_end - day.km_start) + ' km'
+        ]);
+
+        autoTable(doc, {
+            head: [['Data', 'Veículo', 'Receita', 'Despesa', 'Lucro', 'KM']],
+            body: tableData,
+            startY: 35,
+            headStyles: { fillColor: [79, 70, 229] }, // Indigo 600
+        });
+
+        doc.save("drivermind_relatorio.pdf");
+    };
 
     const handleDelete = async (id: string) => {
         if (!confirm('Tem certeza? Isso apagará todos os ganhos e despesas deste dia.')) return;
@@ -491,9 +604,40 @@ const HistoryView = ({ userId }: { userId: string }) => {
     return (
         <div className="p-6 pb-32 space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-slate-900">Histórico</h2>
+                <div className="flex justify-between items-center mb-1">
+                    <h2 className="text-2xl font-bold text-slate-900">Histórico</h2>
+                    <div className="flex gap-2">
+                        <button onClick={exportPDF} className="p-2 rounded-xl bg-white text-slate-400 border border-slate-200 hover:text-indigo-600 hover:border-indigo-600 transition-colors">
+                            <Download size={20} />
+                        </button>
+                        <button onClick={() => setShowChart(!showChart)} className={`p-2 rounded-xl transition-colors ${showChart ? 'bg-indigo-100 text-indigo-600' : 'bg-white text-slate-400 border border-slate-200'}`}>
+                            <BarChart3 size={20} />
+                        </button>
+                    </div>
+                </div>
                 <p className="text-slate-500 text-sm">Finanças por período</p>
             </div>
+
+            {/* CHART SECTION */}
+            {showChart && history.length > 0 && (
+                <div className="bg-white p-4 rounded-3xl shadow-lg border border-slate-100 animate-in fade-in zoom-in-95 duration-300">
+                    <h3 className="text-sm font-bold text-slate-700 mb-4 pl-2">Evolução do Lucro (Últimos dias)</h3>
+                    <div className="h-48 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={[...history].reverse().slice(-14)}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                <XAxis dataKey="date" tickFormatter={(val) => new Date(val).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    formatter={(val: number) => [`R$ ${val.toFixed(2)}`, 'Lucro']}
+                                    labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Line type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={3} dot={{ r: 4, fill: '#10B981' }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
 
             {monthKeys.length === 0 && <p className="text-center text-slate-400 py-10">Nenhum registro encontrado.</p>}
 
@@ -523,7 +667,7 @@ const HistoryView = ({ userId }: { userId: string }) => {
                         </div>
 
                         {days.map(day => (
-                            <div key={day.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center relative group">
+                            <div key={day.id} onClick={() => setSelectedDay(day)} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center relative group cursor-pointer active:scale-[0.98] transition-all">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold text-slate-800">{new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', timeZone: 'UTC' })} <span className="text-xs font-normal text-slate-400 uppercase">({new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' })})</span></span>
@@ -540,7 +684,7 @@ const HistoryView = ({ userId }: { userId: string }) => {
                                     <span className={`font-bold text-lg ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                                         {formatCurrency(day.profit)}
                                     </span>
-                                    <button onClick={() => handleDelete(day.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(day.id); }} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -549,12 +693,15 @@ const HistoryView = ({ userId }: { userId: string }) => {
                     </div>
                 );
             })}
+
+            {/* Modal */}
+            <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} vehicles={vehicles} />
         </div>
     );
 };
 
 // --- CORE: TODAY BOARD ---
-const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense }: { vehicle: Vehicle | null, userId: string, onAddEarning: () => void, onAddExpense: () => void }) => {
+const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, user }: { vehicle: Vehicle | null, userId: string, onAddEarning: () => void, onAddExpense: () => void, user: User }) => {
     const [session, setSession] = useState<WorkDay | null>(null);
     const [earnings, setEarnings] = useState<Earning[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -562,6 +709,21 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense }: { vehicle: V
 
     const [kmStart, setKmStart] = useState('');
     const [kmEnd, setKmEnd] = useState('');
+
+    // Daily Goal
+    const [dailyGoal, setDailyGoal] = useState(300);
+    const [isEditingGoal, setIsEditingGoal] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('drivermind_daily_goal');
+        if (saved) setDailyGoal(parseFloat(saved));
+    }, []);
+
+    const saveGoal = (val: number) => {
+        setDailyGoal(val);
+        localStorage.setItem('drivermind_daily_goal', val.toString());
+        setIsEditingGoal(false);
+    };
 
     const fetchData = async () => {
         if (!vehicle) { setLoading(false); return; }
@@ -642,18 +804,27 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense }: { vehicle: V
     const profit = totalEarnings - totalExpenses;
     const kmDriven = session?.km_end ? session.km_end - session.km_start : 0;
 
+    const goalProgress = Math.min((Math.max(profit, 0) / dailyGoal) * 100, 100);
+
     if (!vehicle) return <div className="p-10 text-center text-slate-500">Selecione um veículo na garagem.</div>;
     if (loading) return <div className="p-10 text-center text-slate-400">Carregando dia...</div>;
 
     if (!session) {
         return (
-            <div className="p-6 pb-32 flex flex-col items-center justify-center h-full">
-                <div className="bg-indigo-50 p-4 rounded-full text-indigo-600 mb-6"><Plus size={32} /></div>
-                <h2 className="text-2xl font-bold mb-2">Iniciar Dia</h2>
-                <p className="text-slate-500 mb-8">{vehicle.name}</p>
-                <Card className="w-full max-w-sm">
-                    <Input label="KM Inicial" type="number" value={kmStart} onChange={(e: any) => setKmStart(e.target.value)} icon={<span className="text-xs font-bold text-slate-400">KM</span>} />
-                    <Button className="mt-4" fullWidth onClick={handleStartDay} disabled={!kmStart}>Abrir Sessão</Button>
+            <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100 overflow-hidden relative">
+                    <img src="/logo.png" className="w-full h-full object-cover" alt="Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-900">Vamos lucrar hoje?</h2>
+                    <p className="text-slate-500">Inicie seu dia de trabalho para registrar ganhos.</p>
+                </div>
+
+                <Card>
+                    <div className="text-left space-y-4">
+                        <Input label="KM Inicial" type="number" value={kmStart} onChange={(e: any) => setKmStart(e.target.value)} placeholder="00000" />
+                        <Button fullWidth onClick={handleStartDay}>Iniciar Dia</Button>
+                    </div>
                 </Card>
             </div>
         );
@@ -661,16 +832,64 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense }: { vehicle: V
 
     return (
         <div className="p-6 pb-32 space-y-6">
-            <div className="flex justify-between items-end">
+            {/* Header / Session Info */}
+            <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-900">Hoje</h2>
-                    <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-1 font-medium"><Car size={16} /> {vehicle.name}</p>
+                    <h1 className="text-2xl font-bold text-slate-900">Olá, {user.user_metadata?.full_name?.split(' ')[0] || 'Motorista'}!</h1>
+                    <p className="text-sm text-slate-500 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Trabalhando com {vehicle.name}
+                    </p>
                 </div>
-                <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase border ${session.status === 'open' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-500'}`}>
-                    {session.status === 'open' ? 'Em andamento' : 'Fechado'}
-                </div>
+                <button onClick={handleEndDay} className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">
+                    Encerrar Dia
+                </button>
             </div>
 
+            {/* GOAL CARD (NEW) */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-5 text-white shadow-xl shadow-indigo-200 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+                <div className="flex justify-between items-start mb-2 relative z-10">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white/20 rounded-lg">
+                            <Target size={16} className="text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-indigo-100 uppercase tracking-wide">Meta Diária</span>
+                    </div>
+                    <button onClick={() => setIsEditingGoal(true)} className="p-1 hover:bg-white/10 rounded transition-colors"><Edit2 size={14} className="text-indigo-200" /></button>
+                </div>
+
+                {isEditingGoal ? (
+                    <div className="flex gap-2 items-center mt-2 relative z-10">
+                        <input
+                            type="number"
+                            autoFocus
+                            className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white font-bold text-lg focus:outline-none focus:bg-white/20"
+                            defaultValue={dailyGoal}
+                            onBlur={(e) => saveGoal(parseFloat(e.target.value) || 300)}
+                            onKeyDown={(e) => e.key === 'Enter' && saveGoal(parseFloat(e.currentTarget.value) || 300)}
+                        />
+                    </div>
+                ) : (
+                    <div className="relative z-10">
+                        <div className="flex items-end gap-1 mb-1">
+                            <span className="text-3xl font-bold">{formatCurrency(profit)}</span>
+                            <span className="text-sm text-indigo-200 mb-1.5">/ {formatCurrency(dailyGoal)}</span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-400 transition-all duration-1000 ease-out relative" style={{ width: `${goalProgress}%` }}>
+                                {goalProgress >= 100 && <div className="absolute inset-0 bg-white/50 animate-pulse"></div>}
+                            </div>
+                        </div>
+                        <div className="text-[10px] text-indigo-200 mt-1 text-right font-medium">
+                            {goalProgress >= 100 ? '🎉 META BATIDA!' : `${Math.round(goalProgress)}% concluído`}
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 bg-gradient-to-br from-indigo-600 to-blue-700 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
                     <span className="text-indigo-100 text-xs font-bold uppercase">Lucro Líquido</span>
@@ -882,7 +1101,7 @@ export default function DriverMindApp() {
     }
 
     const renderContent = () => {
-        if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={handleTabChange} />;
+        if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={setActiveTab} user={user} />;
         if (activeTab === 'history') return <HistoryView userId={user.id} />;
         if (activeTab === 'vehicles') return <VehiclesView userId={user.id} activeVehicleId={activeVehicleId} setActiveVehicleId={setActiveVehicleId} />;
         if (activeTab === 'profile') return (
@@ -906,56 +1125,76 @@ export default function DriverMindApp() {
     const showNav = !['add-expense', 'add-earning'].includes(activeTab);
 
     return (
-        <div className="bg-slate-50 min-h-screen max-w-md mx-auto shadow-2xl overflow-hidden relative">
-            <main className="h-full overflow-y-auto scrollbar-hide pb-24">
-                <MainWrapper />
-            </main>
+        <SecurityWrapper>
+            <div className="bg-slate-50 min-h-screen max-w-md mx-auto shadow-2xl overflow-hidden relative">
+                <main className={`pb-24 ${isMenuOpen ? 'blur-sm brightness-50 pointer-events-none' : ''} transition-all duration-300`}>
+                    {MainWrapper()}
+                </main>
 
-            {/* Backdrop for Menu */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 animate-in fade-in duration-200" onClick={() => setIsMenuOpen(false)}></div>
-            )}
-
-            {showNav && (
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-xl border-t border-slate-100 px-6 py-4 flex justify-between items-center z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                    <NavIcon icon={<LayoutDashboard />} label="Hoje" active={activeTab === 'today'} onClick={() => handleTabChange('today')} />
-                    <NavIcon icon={<History />} label="Histórico" active={activeTab === 'history'} onClick={() => handleTabChange('history')} />
-
-                    <div className="-mt-12 relative z-50">
-                        {/* Dynamic Menu Items */}
-                        <div className={`absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col gap-3 transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90 pointer-events-none'}`}>
-                            <button onClick={() => handleTabChange('add-expense')} className="flex items-center gap-3 bg-red-500 text-white px-5 py-3.5 rounded-2xl shadow-xl hover:bg-red-600 transition-colors whitespace-nowrap font-bold">
-                                <Fuel size={20} className="fill-white/20" /> Nova Despesa
-                            </button>
-                            <button onClick={() => handleTabChange('add-earning')} className="flex items-center gap-3 bg-emerald-500 text-white px-5 py-3.5 rounded-2xl shadow-xl hover:bg-emerald-600 transition-colors whitespace-nowrap font-bold">
-                                <Wallet size={20} className="fill-white/20" /> Novo Ganho
-                            </button>
-                        </div>
-
+                {/* FAB (Floating Action Button) */}
+                {showNav && (
+                    <>
+                        {isMenuOpen && (
+                            <div className="absolute inset-0 z-40" onClick={() => setIsMenuOpen(false)}>
+                                <div className="absolute bottom-24 right-6 flex flex-col gap-3 items-end animate-in slide-in-from-bottom-10 fade-in duration-200">
+                                    <button onClick={(e) => { e.stopPropagation(); setActiveTab('add-earning'); setIsMenuOpen(false); }} className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-full shadow-lg font-bold">
+                                        <TrendingUp size={18} /> Novo Ganho
+                                    </button>
+                                    <button onClick={(e) => { e.stopPropagation(); setActiveTab('add-expense'); setIsMenuOpen(false); }} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg font-bold">
+                                        <TrendingDown size={18} /> Nova Despesa
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className={`w-16 h-16 rounded-[1.2rem] flex items-center justify-center shadow-2xl transition-all duration-300 ${isMenuOpen ? 'bg-slate-800 rotate-45 scale-90' : 'bg-gradient-to-tr from-indigo-600 to-blue-600 hover:scale-105'}`}
+                            className={`absolute bottom-24 right-6 w-14 h-14 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] flex items-center justify-center text-white z-50 transition-all duration-300 ${isMenuOpen ? 'bg-slate-800 rotate-45' : 'bg-gradient-to-tr from-indigo-600 to-purple-600 hover:scale-110 active:scale-95'}`}
                         >
-                            <Plus size={32} className="text-white" />
+                            <Plus size={28} strokeWidth={2.5} />
+                        </button>
+                    </>
+                )}
+
+                {/* Navigation Bar */}
+                {showNav && (
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 flex justify-between items-center text-slate-300 z-50 max-w-md mx-auto">
+                        <button onClick={() => handleTabChange('today')} className={`flex flex-col items-center gap-1 ${activeTab === 'today' ? 'text-indigo-600' : 'hover:text-slate-500'}`}>
+                            <LayoutDashboard size={24} strokeWidth={activeTab === 'today' ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Hoje</span>
+                        </button>
+
+                        <button onClick={() => handleTabChange('history')} className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-indigo-600' : 'hover:text-slate-500'}`}>
+                            <History size={24} strokeWidth={activeTab === 'history' ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Histórico</span>
+                        </button>
+
+                        <button onClick={() => handleTabChange('vehicles')} className={`flex flex-col items-center gap-1 ${activeTab === 'vehicles' ? 'text-indigo-600' : 'hover:text-slate-500'}`}>
+                            <Car size={24} strokeWidth={activeTab === 'vehicles' ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Garagem</span>
+                        </button>
+
+                        {/* Profile/Logout */}
+                        <button onClick={() => handleTabChange('profile')} className={`flex flex-col items-center gap-1 ${activeTab === 'profile' ? 'text-indigo-600' : 'hover:text-slate-500'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${activeTab === 'profile' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-200 text-slate-500 border-slate-200'}`}>
+                                {user.email?.[0].toUpperCase()}
+                            </div>
+                            <span className="text-[10px] font-bold">Perfil</span>
                         </button>
                     </div>
-
-                    <NavIcon icon={<Car />} label="Garagem" active={activeTab === 'vehicles'} onClick={() => handleTabChange('vehicles')} />
-                    <NavIcon icon={<LogOut />} label="Perfil" active={activeTab === 'profile'} onClick={() => handleTabChange('profile')} />
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </SecurityWrapper>
     );
 }
 
 // --- Wrappers for data fetching ---
 
-const TodayWrapper = ({ userId, vehicleId, onTabChange }: { userId: string, vehicleId: string | null, onTabChange: (tab: string) => void }) => {
+const TodayWrapper = ({ userId, vehicleId, onTabChange, user }: { userId: string, vehicleId: string | null, onTabChange: (tab: string) => void, user: User }) => {
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     useEffect(() => {
         if (vehicleId) supabase.from('vehicles').select('*').eq('id', vehicleId).single().then(({ data }) => setVehicle(data));
     }, [vehicleId]);
-    return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} />;
+    return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} user={user} />;
 }
 
 const TransactionWrapper = ({ userId, vehicleId, type, onBack }: any) => {
