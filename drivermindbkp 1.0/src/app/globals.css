@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+:root {
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #f8fafc;
+  /* Slate 50 */
+  --font-inter: "Inter", sans-serif;
+}
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

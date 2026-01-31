@@ -54,21 +54,7 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // 1. Protect routes that require authentication
-    if (!user && request.nextUrl.pathname.startsWith('/reports')) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
-    }
-
-    // 2. Redirect authenticated users away from auth pages
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/'
-        return NextResponse.redirect(url)
-    }
+    await supabase.auth.getUser()
 
     return response
 }

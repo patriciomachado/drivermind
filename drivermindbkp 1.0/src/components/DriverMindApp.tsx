@@ -5,9 +5,7 @@ import { createClient } from '@/lib/supabase';
 import {
     Car, Fuel, Wallet, MapPin, Plus, Trash2, LogOut, ChevronRight,
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
-    TrendingUp, ArrowRight, Lock, Mail, LogIn, Download, BarChart3,
-    User as UserIcon, Share2, RefreshCw, Wrench, Trophy, Target,
-    Zap, Bike, X, TrendingDown, Edit2, Settings
+    TrendingUp, ArrowRight, Lock, Mail, LogIn, Calendar, TrendingDown, X, Target, Edit2, BarChart3, Download, User as UserIcon
 } from 'lucide-react';
 import SecurityWrapper from './SecurityWrapper';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -26,7 +24,6 @@ type Vehicle = {
     name: string;
     model: string;
     plate?: string;
-    type: 'combustion' | 'electric' | 'motorcycle';
     active: boolean;
 };
 
@@ -57,17 +54,6 @@ type Earning = {
     work_day_id: string;
     amount: number;
     platform: string;
-    created_at: string;
-};
-
-type Maintenance = {
-    id: string;
-    vehicle_id: string;
-    type: 'oleo' | 'revisao' | 'pneu' | 'outros';
-    cost: number;
-    date: string;
-    km_at_maintenance?: number;
-    note?: string;
     created_at: string;
 };
 
@@ -250,7 +236,12 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
                 </div>
             </div>
 
-
+            {/* Footer */}
+            <div className="p-4 text-center border-t border-white/5 bg-[#0B1120]">
+                <p className="text-[10px] text-slate-500">
+                    &copy; 2026 Driver Mind. Cancele quando quiser.
+                </p>
+            </div>
         </div>
     );
 };
@@ -317,86 +308,6 @@ const SalesView = ({ onSubscribe, onLogout }: any) => {
     );
 };
 
-// --- SETTINGS VIEW ---
-const SettingsView = ({ user, onBack }: { user: User, onBack: () => void }) => {
-    const [name, setName] = useState(user.user_metadata?.full_name || '');
-    const [dailyGoal, setDailyGoal] = useState(user.user_metadata?.daily_goal?.toString() || '300');
-    const [monthlyGoal, setMonthlyGoal] = useState(user.user_metadata?.monthly_goal?.toString() || '');
-    const [loading, setLoading] = useState(false);
-
-    const handleSave = async () => {
-        setLoading(true);
-        const dGoal = parseFloat(dailyGoal);
-        const mGoal = monthlyGoal ? parseFloat(monthlyGoal) : (dGoal * 26);
-
-        const { error } = await supabase.auth.updateUser({
-            data: {
-                full_name: name,
-                daily_goal: dGoal,
-                monthly_goal: mGoal
-            }
-        });
-        setLoading(false);
-        if (error) {
-            alert('Erro ao salvar: ' + error.message);
-        } else {
-            alert('Configurações salvas!');
-            onBack();
-        }
-    };
-
-    return (
-        <div className="p-6 bg-slate-50 min-h-screen animate-in slide-in-from-right duration-300">
-            <div className="flex items-center gap-4 mb-8">
-                <Button variant="ghost" className="!w-10 !h-10 !p-0 rounded-full border border-slate-200" onClick={onBack}>
-                    <ArrowRight className="rotate-180" />
-                </Button>
-                <h2 className="text-2xl font-bold text-slate-900">Configurações</h2>
-            </div>
-
-            <div className="space-y-6">
-                <Card title="Perfil">
-                    <Input
-                        label="Nome de Exibição"
-                        value={name}
-                        onChange={(e: any) => setName(e.target.value)}
-                        icon={<UserIcon size={20} />}
-                    />
-                </Card>
-
-                <Card title="Preferências">
-                    <Input
-                        label="Meta Diária (R$)"
-                        type="number"
-                        value={dailyGoal}
-                        onChange={(e: any) => setDailyGoal(e.target.value)}
-                        icon={<Target size={20} />}
-                        placeholder="300"
-                    />
-                    <div className="h-4"></div>
-                    <Input
-                        label="Meta Mensal (R$)"
-                        type="number"
-                        value={monthlyGoal}
-                        onChange={(e: any) => setMonthlyGoal(e.target.value)}
-                        icon={<Trophy size={20} />}
-                        placeholder={(parseFloat(dailyGoal || '0') * 26).toString()}
-                    />
-                    <p className="text-xs text-slate-400 mt-2 px-1">
-                        Se deixar vazio, calcularemos automaticamente (Meta Diária x 26).
-                    </p>
-                </Card>
-
-                <div className="pt-4">
-                    <Button fullWidth size="lg" onClick={handleSave} disabled={loading}>
-                        {loading ? 'Salvando...' : 'Salvar Alterações'}
-                    </Button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 // --- AUTH (LOGIN/SIGNUP) ---
 const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', onBack: () => void }) => {
     const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
@@ -420,7 +331,7 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
                     options: { data: { full_name: name } }
                 });
                 if (error) throw error;
-                alert('Cadastrado com sucesso!!');
+                alert('Cadastro realizado! Verifique seu e-mail para confirmar.');
                 setMode('login'); // Switch to login after signup attempt
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -483,7 +394,7 @@ const AuthView = ({ initialMode, onBack }: { initialMode: 'login' | 'signup', on
 const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [newVehicle, setNewVehicle] = useState<{ name: string, model: string, plate: string, type: 'combustion' | 'electric' | 'motorcycle' }>({ name: '', model: '', plate: '', type: 'combustion' });
+    const [newVehicle, setNewVehicle] = useState({ name: '', model: '', plate: '' });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -507,7 +418,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
         if (data) {
             setVehicles([...vehicles, data]);
             setIsAdding(false);
-            setNewVehicle({ name: '', model: '', plate: '', type: 'combustion' });
+            setNewVehicle({ name: '', model: '', plate: '' });
             if (!activeVehicleId) setActiveVehicleId(data.id);
         }
     };
@@ -523,61 +434,6 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
         }
     }
 
-    // Maintenance Logic
-    const [maintenanceVehicle, setMaintenanceVehicle] = useState<Vehicle | null>(null);
-    const [maintenances, setMaintenances] = useState<Maintenance[]>([]);
-    const [newMaintenance, setNewMaintenance] = useState<{ type: string, cost: string, note: string, km: string, date: string }>({ type: 'manutencao', cost: '', note: '', km: '', date: new Date().toISOString().substring(0, 10) });
-    const [isAddingMaint, setIsAddingMaint] = useState(false);
-    const [maintLoading, setMaintLoading] = useState(false);
-
-    const openMaintenance = async (v: Vehicle) => {
-        setMaintenanceVehicle(v);
-        const { data } = await supabase.from('maintenances').select('*').eq('vehicle_id', v.id).order('date', { ascending: false });
-        setMaintenances(data || []);
-        setIsAddingMaint(false);
-    };
-
-    const saveMaintenance = async () => {
-        if (!maintenanceVehicle) return;
-        if (!newMaintenance.cost) {
-            alert('Por favor, informe o valor da manutenção.');
-            return;
-        }
-
-        setMaintLoading(true);
-        // Save to Supabase
-        const { error } = await supabase.from('maintenances').insert({
-            user_id: userId, // Added user_id back
-            vehicle_id: maintenanceVehicle.id,
-            type: newMaintenance.type,
-            cost: parseFloat(newMaintenance.cost),
-            note: newMaintenance.note,
-            km_at_maintenance: newMaintenance.km ? parseInt(newMaintenance.km) : null,
-            date: newMaintenance.date
-        });
-
-        if (error) {
-            alert('Erro ao salvar: ' + error.message);
-        } else {
-            // Refresh list
-            openMaintenance(maintenanceVehicle);
-            // Reset form
-            setNewMaintenance({ type: 'manutencao', cost: '', note: '', km: '', date: new Date().toISOString().substring(0, 10) });
-            setIsAddingMaint(false);
-        }
-        setMaintLoading(false);
-    };
-
-    const deleteMaintenance = async (id: string) => {
-        // if (!confirm('Excluir esta manutenção?')) return; // Immediate delete
-        const { error } = await supabase.from('maintenances').delete().eq('id', id);
-        if (error) {
-            alert('Erro ao excluir: ' + error.message);
-        } else {
-            if (maintenanceVehicle) openMaintenance(maintenanceVehicle);
-        }
-    };
-
     return (
         <div className="p-6 space-y-6 pb-32">
             <div className="flex justify-between items-center">
@@ -588,18 +444,6 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             {isAdding && (
                 <Card>
                     <div className="space-y-4">
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                            <button onClick={() => setNewVehicle({ ...newVehicle, type: 'combustion' })} className={`p-2 rounded-xl border flex flex-col items-center gap-1 text-[10px] font-bold ${newVehicle.type === 'combustion' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-slate-100 text-slate-400'}`}>
-                                <Fuel size={16} /> Combustão
-                            </button>
-                            <button onClick={() => setNewVehicle({ ...newVehicle, type: 'electric' })} className={`p-2 rounded-xl border flex flex-col items-center gap-1 text-[10px] font-bold ${newVehicle.type === 'electric' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-slate-100 text-slate-400'}`}>
-                                <Zap size={16} /> Elétrico
-                            </button>
-                            <button onClick={() => setNewVehicle({ ...newVehicle, type: 'motorcycle' })} className={`p-2 rounded-xl border flex flex-col items-center gap-1 text-[10px] font-bold ${newVehicle.type === 'motorcycle' ? 'bg-amber-50 border-amber-500 text-amber-700' : 'border-slate-100 text-slate-400'}`}>
-                                <Bike size={16} /> Moto
-                            </button>
-                        </div>
-
                         <Input label="Apelido" value={newVehicle.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, name: e.target.value })} autoFocus placeholder="Ex: Onix Prata" />
                         <Input label="Modelo" value={newVehicle.model} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, model: e.target.value })} placeholder="Ex: Onix LTZ" />
                         <Input label="Placa" value={newVehicle.plate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle({ ...newVehicle, plate: e.target.value })} placeholder="ABC-1234" />
@@ -610,119 +454,14 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 
             <div className="space-y-4">
                 {vehicles.map(v => (
-                    <div key={v.id} className="relative">
-                        {/* Vehicle Card */}
-                        <div
-                            onClick={() => setActiveVehicleId(v.id)}
-                            className={`p-5 rounded-3xl border transition-all cursor-pointer relative z-10 overflow-hidden ${activeVehicleId === v.id ? 'bg-indigo-600 text-white shadow-xl scale-[1.02]' : 'bg-white border-slate-100 hover:scale-[1.01]'}`}
-                        >
-                            <div className="flex justify-between items-center relative z-10">
-                                <div>
-                                    <h3 className="font-bold text-lg flex items-center gap-2">
-                                        {v.type === 'electric' && <Zap size={16} className="text-emerald-500" />}
-                                        {v.type === 'motorcycle' && <Bike size={16} className="text-amber-500" />}
-                                        {(!v.type || v.type === 'combustion') && <Fuel size={16} className="text-slate-400" />}
-                                        {v.name}
-                                    </h3>
-                                    <p className={`text-sm ${activeVehicleId === v.id ? 'text-indigo-200' : 'text-slate-400'}`}>{v.model || 'Sem modelo'} • {v.plate}</p>
-                                </div>
-                                {activeVehicleId === v.id ?
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                maintenanceVehicle?.id === v.id ? setMaintenanceVehicle(null) : openMaintenance(v);
-                                            }}
-                                            className={`p-2 rounded-full text-white transition-colors border ${maintenanceVehicle?.id === v.id ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-indigo-500 hover:bg-indigo-400 border-transparent'}`}
-                                        >
-                                            <Wrench size={18} />
-                                        </button>
-                                        <div className="p-2 bg-indigo-500 rounded-full text-white"><CheckCircle2 size={18} /></div>
-                                    </div>
-                                    : <Trash2 className="text-slate-300 hover:text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(v.id) }} />
-                                }
+                    <div key={v.id} onClick={() => setActiveVehicleId(v.id)} className={`p-5 rounded-3xl border transition-all cursor-pointer relative overflow-hidden ${activeVehicleId === v.id ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white border-slate-100'}`}>
+                        <div className="flex justify-between items-center relative z-10">
+                            <div>
+                                <h3 className="font-bold text-lg">{v.name}</h3>
+                                <p className={`text-sm ${activeVehicleId === v.id ? 'text-indigo-200' : 'text-slate-400'}`}>{v.model || 'Sem modelo'} • {v.plate}</p>
                             </div>
+                            {activeVehicleId === v.id ? <CheckCircle2 className="text-white" /> : <Trash2 className="text-slate-300 hover:text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(v.id) }} />}
                         </div>
-
-                        {/* INLINE MAINTENANCE SECTION */}
-                        {maintenanceVehicle?.id === v.id && (
-                            <div className="w-full bg-slate-50/80 backdrop-blur-sm rounded-b-3xl -mt-6 pt-10 pb-6 px-4 border-x border-b border-indigo-500/10 shadow-inner mb-4 animate-in slide-in-from-top-4 fade-in duration-300 relative z-0 origin-top">
-                                <div className="flex justify-between items-center mb-4 px-2">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                        <Wrench size={14} /> Manutenções
-                                    </h3>
-                                    <button onClick={() => setMaintenanceVehicle(null)} className="p-1.5 bg-white rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm">
-                                        <X size={14} />
-                                    </button>
-                                </div>
-
-                                {isAddingMaint ? (
-                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-                                        <h3 className="font-bold text-indigo-600 mb-3 text-sm">Nova Manutenção</h3>
-                                        <div className="grid grid-cols-2 gap-2 mb-3">
-                                            <button onClick={() => setNewMaintenance({ ...newMaintenance, type: 'oleo' })} className={`p-2 rounded-xl border font-bold text-xs ${newMaintenance.type === 'oleo' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Troca de Óleo</button>
-                                            <button onClick={() => setNewMaintenance({ ...newMaintenance, type: 'revisao' })} className={`p-2 rounded-xl border font-bold text-xs ${newMaintenance.type === 'revisao' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Revisão</button>
-                                            <button onClick={() => setNewMaintenance({ ...newMaintenance, type: 'pneu' })} className={`p-2 rounded-xl border font-bold text-xs ${newMaintenance.type === 'pneu' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Pneus</button>
-                                            <button onClick={() => setNewMaintenance({ ...newMaintenance, type: 'outros' })} className={`p-2 rounded-xl border font-bold text-xs ${newMaintenance.type === 'outros' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Outros</button>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Input label="Valor R$" type="number" value={newMaintenance.cost} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, cost: e.target.value })} />
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <Input label="KM" type="number" value={newMaintenance.km} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, km: e.target.value })} />
-                                                <Input label="Data" type="date" value={newMaintenance.date} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, date: e.target.value })} />
-                                            </div>
-                                            <Input label="Obs" value={newMaintenance.note} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, note: e.target.value })} />
-                                        </div>
-
-                                        <div className="flex gap-2 mt-4">
-                                            <Button variant="ghost" size="sm" fullWidth onClick={() => setIsAddingMaint(false)}>Cancelar</Button>
-                                            <Button size="sm" fullWidth onClick={saveMaintenance} disabled={maintLoading}>
-                                                {maintLoading ? 'Salvando...' : 'Salvar'}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                                            {maintenances.length === 0 ? (
-                                                <div className="text-center py-6 text-slate-400 bg-white rounded-xl border border-slate-100 border-dashed text-sm">
-                                                    Nenhuma manutenção registrada.
-                                                </div>
-                                            ) : (
-                                                maintenances.map(m => (
-                                                    <div key={m.id} className="p-3 rounded-xl bg-white border border-slate-100 shadow-sm flex justify-between items-center group">
-                                                        <div className="flex gap-3 items-center">
-                                                            <div className={`p-2 rounded-lg ${m.type === 'oleo' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                                <Wrench size={14} />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-slate-700 text-sm capitalize">{m.type === 'oleo' ? 'Troca de Óleo' : m.type}</h4>
-                                                                <p className="text-[10px] text-slate-400">{new Date(m.date).toLocaleDateString('pt-BR')} {m.km_at_maintenance ? `• ${m.km_at_maintenance} km` : ''}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right flex items-center gap-3">
-                                                            <div>
-                                                                <span className="font-bold text-slate-900 text-sm block">{formatCurrency(m.cost)}</span>
-                                                                <span className="text-[10px] text-slate-400">{m.note || '-'}</span>
-                                                            </div>
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); deleteMaintenance(m.id); }}
-                                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                        <Button variant="outline" size="sm" fullWidth onClick={() => setIsAddingMaint(true)} className="bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-50">
-                                            <Plus size={16} className="mr-1" /> Nova Manutenção
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 ))}
             </div>
@@ -731,7 +470,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 };
 
 // --- HISTORY DETAIL MODAL (NEW) ---
-const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, vehicles: Record<string, string>, onClose: () => void, onUpdate?: () => void }) => {
+const HistoryDetailModal = ({ day, vehicles, onClose }: { day: any, vehicles: Record<string, string>, onClose: () => void }) => {
     if (!day) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
@@ -763,25 +502,9 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                         <div className="space-y-2">
                             {day.earnings && day.earnings.length > 0 ? (
                                 day.earnings.map((e: any) => (
-                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 group">
-                                        <div className="flex-1">
-                                            <span className="font-medium text-slate-600">{e.platform}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-bold text-emerald-600">{formatCurrency(e.amount)}</span>
-                                            <button
-                                                onClick={async (ev) => {
-                                                    ev.stopPropagation();
-                                                    // if (!confirm('Excluir este ganho?')) return; // Removed request
-                                                    await supabase.from('earnings').delete().eq('id', e.id);
-                                                    if (onUpdate) onUpdate();
-                                                    else onClose();
-                                                }}
-                                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
+                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <span className="font-medium text-slate-600">{e.platform}</span>
+                                        <span className="font-bold text-emerald-600">{formatCurrency(e.amount)}</span>
                                     </div>
                                 ))
                             ) : <p className="text-xs text-slate-400 italic">Nenhum ganho registrado.</p>}
@@ -796,26 +519,12 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                         <div className="space-y-2">
                             {day.expenses && day.expenses.length > 0 ? (
                                 day.expenses.map((e: any) => (
-                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 group">
-                                        <div className="flex flex-col flex-1">
+                                    <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="flex flex-col">
                                             <span className="font-medium text-slate-600 capitalize">{e.category}</span>
                                             {e.note && <span className="text-[10px] text-slate-400">{e.note}</span>}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-bold text-red-500">{formatCurrency(e.amount)}</span>
-                                            <button
-                                                onClick={async (ev) => {
-                                                    ev.stopPropagation();
-                                                    // if (!confirm('Excluir esta despesa?')) return; // Removed request
-                                                    await supabase.from('expenses').delete().eq('id', e.id);
-                                                    if (onUpdate) onUpdate();
-                                                    else onClose();
-                                                }}
-                                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
+                                        <span className="font-bold text-red-500">{formatCurrency(e.amount)}</span>
                                     </div>
                                 ))
                             ) : <p className="text-xs text-slate-400 italic">Nenhuma despesa registrada.</p>}
@@ -831,7 +540,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
 };
 
 // --- HISTORY VIEW ---
-const HistoryView = ({ userId, user }: { userId: string, user: User }) => {
+const HistoryView = ({ userId }: { userId: string }) => {
     const [history, setHistory] = useState<any[]>([]);
     const [vehicles, setVehicles] = useState<Record<string, string>>({});
     const [selectedDay, setSelectedDay] = useState<any>(null); // For Detail Modal
@@ -965,22 +674,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: User }) => {
                 const mProfit = days.reduce((a, b) => a + b.profit, 0);
                 const mKm = days.reduce((a, b) => a + (b.km_end - b.km_start), 0);
                 const mCost = days.reduce((a, b) => a + b.expense, 0);
-                const mIncome = days.reduce((a, b) => a + b.income, 0);
                 const costPerKm = mKm > 0 ? mCost / mKm : 0;
-
-                const dailyGoal = user.user_metadata?.daily_goal || 300;
-                // Use stored monthly goal OR calculate default
-                const monthlyGoal = user.user_metadata?.monthly_goal || (dailyGoal * 26);
-                const progress = Math.min((mIncome / monthlyGoal) * 100, 100);
-
-                const getMotivation = (p: number) => {
-                    if (p >= 100) return "🚀 MÊS ESPETACULAR! Meta batida!";
-                    if (p >= 90) return "🔥 Falta muito pouco! Acelera!";
-                    if (p >= 75) return "💪 Excelente ritmo! Continue assim.";
-                    if (p >= 50) return "👍 Metade já foi! Mantenha o foco.";
-                    if (p >= 25) return "🙂 Bom começo. Vamos buscar mais!";
-                    return "🌱 Todo começo é importante. Persista!";
-                };
 
                 return (
                     <div key={month} className="space-y-3">
@@ -989,31 +683,14 @@ const HistoryView = ({ userId, user }: { userId: string, user: User }) => {
                             <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">R$ {costPerKm.toFixed(2)} / km</span>
                         </div>
 
-                        <div className="bg-slate-900 text-white p-5 rounded-[2rem] shadow-lg relative overflow-hidden">
-                            {/* Progress Background */}
-                            <div className="absolute bottom-0 left-0 h-1.5 bg-slate-800 w-full">
-                                <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-lg flex justify-between items-center">
+                            <div>
+                                <span className="text-xs text-slate-400 font-bold uppercase">Lucro do Mês</span>
+                                <div className="text-xl font-bold text-emerald-400">{formatCurrency(mProfit)}</div>
                             </div>
-
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Faturamento (Bruto)</span>
-                                    <div className="text-3xl font-bold text-white mt-1">{formatCurrency(mIncome)}</div>
-                                    <div className="text-[10px] text-slate-400 mt-1">Meta: {formatCurrency(monthlyGoal)} ({Math.round(progress)}%)</div>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xs text-slate-400 font-bold uppercase">Lucro Líquido</span>
-                                    <div className={`text-lg font-bold ${mProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(mProfit)}</div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/5 flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500/20 rounded-full text-emerald-400">
-                                    {progress >= 100 ? <Trophy size={16} /> : <Target size={16} />}
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-white">{getMotivation(progress)}</p>
-                                </div>
+                            <div className="text-right">
+                                <span className="text-xs text-slate-400 font-bold uppercase">Rodagem</span>
+                                <div className="text-lg font-bold">{mKm} km</div>
                             </div>
                         </div>
 
@@ -1062,26 +739,17 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
     const [kmEnd, setKmEnd] = useState('');
 
     // Daily Goal
-    // Daily Goal
-    const [dailyGoal, setDailyGoal] = useState<number>(user.user_metadata?.daily_goal || 300);
+    const [dailyGoal, setDailyGoal] = useState(300);
     const [isEditingGoal, setIsEditingGoal] = useState(false);
-    const [showReportModal, setShowReportModal] = useState(false);
 
     useEffect(() => {
-        // Priority: Metadata > LocalStorage > Default
-        if (user.user_metadata?.daily_goal) {
-            setDailyGoal(user.user_metadata.daily_goal);
-        } else {
-            const saved = localStorage.getItem('drivermind_daily_goal');
-            if (saved) setDailyGoal(parseFloat(saved));
-        }
-    }, [user]);
+        const saved = localStorage.getItem('drivermind_daily_goal');
+        if (saved) setDailyGoal(parseFloat(saved));
+    }, []);
 
-    const saveGoal = async (val: number) => {
+    const saveGoal = (val: number) => {
         setDailyGoal(val);
         localStorage.setItem('drivermind_daily_goal', val.toString());
-        // Also persist to account
-        await supabase.auth.updateUser({ data: { daily_goal: val } });
         setIsEditingGoal(false);
     };
 
@@ -1220,9 +888,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
             </div>
 
             {/* GOAL CARD (NEW) */}
-
-
-            <div onClick={() => setShowReportModal(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-5 text-white shadow-xl shadow-indigo-200 relative overflow-hidden cursor-pointer active:scale-95 transition-transform">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-5 text-white shadow-xl shadow-indigo-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
 
                 <div className="flex justify-between items-start mb-2 relative z-10">
@@ -1232,11 +898,11 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                         </div>
                         <span className="text-xs font-bold text-indigo-100 uppercase tracking-wide">Meta Diária</span>
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); setIsEditingGoal(true); }} className="p-1 hover:bg-white/10 rounded transition-colors"><Edit2 size={14} className="text-indigo-200" /></button>
+                    <button onClick={() => setIsEditingGoal(true)} className="p-1 hover:bg-white/10 rounded transition-colors"><Edit2 size={14} className="text-indigo-200" /></button>
                 </div>
 
                 {isEditingGoal ? (
-                    <div className="flex gap-2 items-center mt-2 relative z-10" onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-2 items-center mt-2 relative z-10">
                         <input
                             type="number"
                             autoFocus
@@ -1249,8 +915,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                 ) : (
                     <div className="relative z-10">
                         <div className="flex items-end gap-1 mb-1">
-                            {/* Showing Gross Profit (Total Earnings) as requested */}
-                            <span className="text-3xl font-bold">{formatCurrency(totalEarnings)}</span>
+                            <span className="text-3xl font-bold">{formatCurrency(profit)}</span>
                             <span className="text-sm text-indigo-200 mb-1.5">/ {formatCurrency(dailyGoal)}</span>
                         </div>
 
@@ -1263,11 +928,14 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                         <div className="text-[10px] text-indigo-200 mt-1 text-right font-medium">
                             {goalProgress >= 100 ? '🎉 META BATIDA!' : `${Math.round(goalProgress)}% concluído`}
                         </div>
-                        <p className="text-[10px] text-indigo-300 mt-2 text-center opacity-70">Toque para ver detalhes</p>
                     </div>
                 )}
             </div>
             <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 bg-gradient-to-br from-indigo-600 to-blue-700 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
+                    <span className="text-indigo-100 text-xs font-bold uppercase">Lucro Líquido</span>
+                    <div className="text-4xl font-bold mt-1">{formatCurrency(profit)}</div>
+                </div>
                 <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm cursor-pointer active:scale-95 transition-transform hover:bg-emerald-50" onClick={onAddEarning}>
                     <div className="flex items-center gap-2 mb-2"><TrendingUp size={14} className="text-emerald-500" /> <span className="text-xs font-bold text-slate-400 uppercase">Ganhos</span></div>
                     <span className="text-xl font-bold text-emerald-600">{formatCurrency(totalEarnings)}</span>
@@ -1289,59 +957,37 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                 <div className="text-center"><span className="text-xs text-slate-400 font-bold uppercase">Rodagem</span><div className="text-2xl font-bold">{kmDriven > 0 ? kmDriven : (session.status === 'closed' ? 0 : '--')} km</div></div>
             </div>
 
-            {
-                session.status === 'open' ? (
-                    <button
-                        onClick={onFinishDay}
-                        className="w-full bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-between shadow-xl mt-6 active:scale-95 transition-transform"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500 rounded-xl text-white">
-                                <CheckCircle2 size={24} />
-                            </div>
-                            <div className="text-left">
-                                <div className="font-bold text-lg">Encerrar Dia</div>
-                                <div className="text-xs text-slate-400">Finalizar expediente e KM</div>
-                            </div>
+            {session.status === 'open' ? (
+                <button
+                    onClick={onFinishDay}
+                    className="w-full bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-between shadow-xl mt-6 active:scale-95 transition-transform"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500 rounded-xl text-white">
+                            <CheckCircle2 size={24} />
                         </div>
-                        <ChevronRight className="text-slate-500" />
-                    </button>
-                ) : (
-                    <Card>
-                        <div className="flex flex-col gap-2">
-                            <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-center font-bold flex items-center justify-center gap-2">
-                                <CheckCircle2 size={18} /> Dia Finalizado
-                            </div>
-                            <Button variant="outline" onClick={async () => {
-                                if (!confirm('Deseja reabrir este dia?')) return;
-                                await supabase.from('work_days').update({ status: 'open', km_end: null }).eq('id', session.id);
-                                fetchData();
-                            }}>Reabrir Dia</Button>
+                        <div className="text-left">
+                            <div className="font-bold text-lg">Encerrar Dia</div>
+                            <div className="text-xs text-slate-400">Finalizar expediente e KM</div>
                         </div>
-                    </Card>
-                )
-            }
-            {
-                showReportModal && (
-                    <HistoryDetailModal
-                        day={{
-                            date: session.date,
-                            profit: profit,
-                            income: totalEarnings,
-                            expense: totalExpenses,
-                            earnings: earnings,
-                            expenses: expenses,
-                            km_start: session.km_start,
-                            km_end: session.km_end ?? 0,
-                            vehicle_id: vehicle.id
-                        }}
-                        vehicles={{ [vehicle.id]: vehicle.name }}
-                        onClose={() => setShowReportModal(false)}
-                        onUpdate={() => { setShowReportModal(false); fetchData(); }}
-                    />
-                )
-            }
-        </div >
+                    </div>
+                    <ChevronRight className="text-slate-500" />
+                </button>
+            ) : (
+                <Card>
+                    <div className="flex flex-col gap-2">
+                        <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-center font-bold flex items-center justify-center gap-2">
+                            <CheckCircle2 size={18} /> Dia Finalizado
+                        </div>
+                        <Button variant="outline" onClick={async () => {
+                            if (!confirm('Deseja reabrir este dia?')) return;
+                            await supabase.from('work_days').update({ status: 'open', km_end: null }).eq('id', session.id);
+                            fetchData();
+                        }}>Reabrir Dia</Button>
+                    </div>
+                </Card>
+            )}
+        </div>
     );
 };
 
@@ -1428,11 +1074,11 @@ const AddTransactionView = ({ type, session, onBack }: { type: 'expense' | 'earn
                         key={opt.name}
                         onClick={() => setCategory(opt)}
                         className={`p-4 rounded-2xl font-bold border-2 transition-all flex flex-col items-center gap-2 ${category.name === opt.name
-                            ? `border-${config.color}-500 bg-${config.color}-500 text-white shadow-lg transform scale-[1.02]`
+                            ? `border-${config.color}-500 bg-${config.color}-50 text-${config.color}-700 shadow-sm transform scale-[1.02]`
                             : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
                             }`}
                     >
-                        <div className={`p-2 rounded-full ${category.name === opt.name ? `bg-white text-${config.color}-500` : 'bg-slate-100 text-slate-500'}`}>{opt.icon}</div>
+                        <div className={`p-2 rounded-full ${category.name === opt.name ? 'bg-white' : 'bg-slate-100'}`}>{opt.icon}</div>
                         <span className="capitalize text-sm">{opt.label}</span>
                     </button>
                 ))}
@@ -1583,53 +1229,14 @@ export default function DriverMindApp() {
 
     const renderContent = () => {
         if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={setActiveTab} user={user} />;
-        if (activeTab === 'history') return <HistoryView userId={user.id} user={user} />;
+        if (activeTab === 'history') return <HistoryView userId={user.id} />;
         if (activeTab === 'vehicles') return <VehiclesView userId={user.id} activeVehicleId={activeVehicleId} setActiveVehicleId={setActiveVehicleId} />;
         if (activeTab === 'profile') return (
-            <div className="p-6 pb-24 animate-in slide-in-from-right-10 duration-500">
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">Meu Perfil</h2>
-
-                <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center mb-6">
-                    <div className="w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-xl shadow-indigo-200 relative">
-                        {user.email?.[0].toUpperCase()}
-                        <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 border-4 border-white rounded-full"></div>
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900">{user.email?.split('@')[0]}</h3>
-                    <p className="text-slate-400 text-sm mb-2">{user.email}</p>
-                    <div className="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold text-slate-500">
-                        Membro desde {new Date(user.created_at || Date.now()).getFullYear()}
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    <button onClick={() => setActiveTab('settings')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
-                        <div className="flex items-center gap-3"><Settings size={20} className="text-indigo-500" /> Configurações</div>
-                        <ChevronRight size={16} className="text-slate-300" />
-                    </button>
-                    <button onClick={() => {
-                        if (navigator.share) {
-                            navigator.share({ title: 'Driver Mind', text: 'Controle seus ganhos com inteligência!', url: window.location.href });
-                        } else {
-                            alert('Link copiado!');
-                            navigator.clipboard.writeText(window.location.href);
-                        }
-                    }} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
-                        <div className="flex items-center gap-3"><Share2 size={20} className="text-indigo-500" /> Compartilhar App</div>
-                        <ChevronRight size={16} className="text-slate-300" />
-                    </button>
-                    <button onClick={() => window.open('mailto:suporte@drivermind.com')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
-                        <div className="flex items-center gap-3"><AlertCircle size={20} className="text-indigo-500" /> Suporte</div>
-                        <ChevronRight size={16} className="text-slate-300" />
-                    </button>
-                </div>
-
-                <div className="mt-8">
-                    <Button variant="danger" onClick={() => supabase.auth.signOut()} fullWidth className="shadow-lg shadow-red-100">
-                        <LogOut size={18} className="mr-2" /> Sair da Conta
-                    </Button>
-                </div>
-
-                <p className="text-center text-xs text-slate-300 mt-8">DriverMind v0.1.2 • De um motorista, para outros motoristas.</p>
+            <div className="p-6 h-[70vh] flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
+                <div className="w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-6 shadow-2xl shadow-indigo-200">{user.email?.[0].toUpperCase()}</div>
+                <h2 className="text-slate-900 font-bold text-lg mb-1">Conta Conectada</h2>
+                <p className="mb-8 font-mono bg-slate-100 px-4 py-2 rounded-xl text-slate-500 text-sm">{user.email}</p>
+                <Button variant="danger" onClick={() => supabase.auth.signOut()} className="w-full max-w-xs"><LogOut size={18} /> Sair da Conta</Button>
             </div>
         );
         return null; // Fallback
@@ -1642,13 +1249,10 @@ export default function DriverMindApp() {
         if (activeTab === 'finish-day') {
             return <FinishDayWrapper userId={user.id} vehicleId={activeVehicleId} onBack={() => setActiveTab('today')} />
         }
-        if (activeTab === 'settings') {
-            return <SettingsView user={user} onBack={() => setActiveTab('profile')} />
-        }
         return renderContent();
     };
 
-    const showNav = !['add-expense', 'add-earning', 'finish-day', 'settings'].includes(activeTab);
+    const showNav = !['add-expense', 'add-earning', 'finish-day'].includes(activeTab);
 
     return (
         <SecurityWrapper>
