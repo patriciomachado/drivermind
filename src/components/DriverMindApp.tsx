@@ -257,6 +257,11 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
 
 // --- SALES VIEW (TRIAL EXPIRED) ---
 const SalesView = ({ onSubscribe, onLogout }: any) => {
+    const handleWhatsApp = () => {
+        const message = encodeURIComponent("Olá! Meu período de teste no DriverMind acabou e gostaria de assinar uma licença. Como procedo?");
+        window.open(`https://wa.me/5548992253003?text=${message}`, '_blank');
+    };
+
     return (
         <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden flex flex-col items-center justify-center p-6 text-center">
             {/* Background Effects */}
@@ -268,45 +273,38 @@ const SalesView = ({ onSubscribe, onLogout }: any) => {
 
             <h1 className="text-3xl font-bold mb-2">Seu teste acabou!</h1>
             <p className="text-slate-400 mb-8 max-w-xs mx-auto">
-                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, ative sua assinatura.
+                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, escolha seu plano.
             </p>
 
             <div className="bg-[#1E293B] p-6 rounded-3xl border border-indigo-500/30 shadow-2xl w-full max-w-sm relative overflow-hidden mb-8">
                 <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-500 to-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
                     OFERTA ESPECIAL
                 </div>
-                <div className="text-sm text-slate-400 uppercase font-bold mb-2">Driver Mind Pro</div>
-                <div className="flex items-end justify-center gap-1 mb-2">
-                    <span className="text-4xl font-bold text-white">12x R$ 5,99</span>
-                </div>
-                <div className="text-[10px] text-slate-500 mb-6">ou R$ 59,90 à vista</div>
 
-                <ul className="text-left space-y-3 mb-6 text-sm text-slate-300">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Controle de Ganhos e Gastos</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Relatórios de Lucro Real</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Cálculo de Custo por KM</li>
-                </ul>
+                <div className="space-y-4 mb-6">
+                    <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Semestral (6 meses)</div>
+                        <div className="text-2xl font-bold text-white">R$ 16,90 <span className="text-xs font-normal text-slate-400">/total</span></div>
+                        <div className="text-[10px] text-emerald-400">Sai R$ 2,81 por mês!</div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-indigo-500/50 relative">
+                        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">MELHOR VALOR</div>
+                        <div className="text-xs text-indigo-200 uppercase font-bold mb-1">Anual (12 meses)</div>
+                        <div className="text-3xl font-bold text-white">R$ 21,90 <span className="text-xs font-normal text-slate-400">/ano</span></div>
+                        <div className="text-[10px] text-emerald-400 font-bold">Sai R$ 1,82 por mês! 🔥</div>
+                    </div>
+                </div>
+
+                <p className="text-xs text-slate-400 mb-4 px-4">
+                    A liberação é feita manualmente. Clique abaixo para chamar no WhatsApp e ativar sua conta.
+                </p>
 
                 <button
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={async () => {
-                        try {
-                            const res = await fetch('/api/checkout', {
-                                method: 'POST',
-                                body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID })
-                            });
-                            const data = await res.json();
-                            if (data.url) {
-                                window.location.href = data.url;
-                            } else {
-                                alert('Erro ao iniciar pagamento. Tente novamente.');
-                            }
-                        } catch (err) {
-                            alert('Erro de conexão. Verifique sua intenet.');
-                        }
-                    }}
+                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    onClick={handleWhatsApp}
                 >
-                    QUERO CONTINUAR LUCRANDO
+                    <Share2 size={20} /> FALAR NO WHATSAPP
                 </button>
             </div>
 
@@ -1618,8 +1616,12 @@ export default function DriverMindApp() {
                         <ChevronRight size={16} className="text-slate-300" />
                     </button>
                     <button onClick={() => window.open('mailto:suporte@drivermind.com')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
-                        <div className="flex items-center gap-3"><AlertCircle size={20} className="text-indigo-500" /> Suporte</div>
+                        <div className="flex items-center gap-3"><AlertCircle size={20} className="text-indigo-500" /> Suporte (Email)</div>
                         <ChevronRight size={16} className="text-slate-300" />
+                    </button>
+                    <button onClick={() => window.open('https://wa.me/5548992253003?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20DriverMind', '_blank')} className="w-full bg-[#25D366] p-4 rounded-2xl border border-green-500 flex items-center justify-between text-white font-bold hover:bg-[#20bd5a] transition-colors active:scale-95 shadow-lg shadow-green-100">
+                        <div className="flex items-center gap-3"><Share2 size={20} className="text-white" /> Falar no WhatsApp</div>
+                        <ChevronRight size={16} className="text-green-100" />
                     </button>
                 </div>
 
