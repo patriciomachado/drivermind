@@ -1516,6 +1516,26 @@ export default function DriverMindApp() {
     const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false); // Dynamic FAB State
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null); // PWA Install Prompt
+
+    // Handle PWA Event
+    useEffect(() => {
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
+    const installApp = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setDeferredPrompt(null);
+        }
+    };
 
     // Initial Auth Check
     useEffect(() => {
@@ -1600,6 +1620,12 @@ export default function DriverMindApp() {
                 </div>
 
                 <div className="space-y-3">
+                    {deferredPrompt && (
+                        <button onClick={installApp} className="w-full bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-slate-200 active:scale-95 transition-transform mb-4 animate-in slide-in-from-top-4 fade-in duration-300">
+                            <Download size={20} /> Instalar Aplicativo
+                        </button>
+                    )}
+
                     <button onClick={() => setActiveTab('settings')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
                         <div className="flex items-center gap-3"><Settings size={20} className="text-indigo-500" /> Configurações</div>
                         <ChevronRight size={16} className="text-slate-300" />
