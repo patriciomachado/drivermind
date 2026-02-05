@@ -1518,6 +1518,7 @@ export default function DriverMindApp() {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // Dynamic FAB State
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null); // PWA Install Prompt
     const [isIOS, setIsIOS] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
     const [showInstallHelp, setShowInstallHelp] = useState(false);
 
     // Handle PWA Event & Platform Detection
@@ -1527,28 +1528,37 @@ export default function DriverMindApp() {
         const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
         setIsIOS(isIosDevice);
 
+        // Check for Standalone (Installed) Mode
+        const checkStandalone = () => {
+            const isStand = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+            setIsStandalone(isStand);
+        };
+        checkStandalone();
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
+
         const handler = (e: any) => {
             e.preventDefault();
             setDeferredPrompt(e);
         };
         window.addEventListener('beforeinstallprompt', handler);
-        return () => window.removeEventListener('beforeinstallprompt', handler);
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+            window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkStandalone);
+        };
     }, []);
 
     const installApp = async () => {
-        if (isIOS) {
-            setShowInstallHelp(true);
+        // If we have the native prompt, use it
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                setDeferredPrompt(null);
+            }
             return;
         }
-        if (!deferredPrompt) {
-            alert('A instalação pode não estar disponível neste navegador. Tente pelo Chrome ou Edge.');
-            return;
-        }
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            setDeferredPrompt(null);
-        }
+        // Fallback: Show instructions (iOS or Android without prompt)
+        setShowInstallHelp(true);
     };
 
     // Initial Auth Check
@@ -1634,7 +1644,7 @@ export default function DriverMindApp() {
                 </div>
 
                 <div className="space-y-3">
-                    {(deferredPrompt || isIOS) && (
+                    {!isStandalone && (
                         <button onClick={installApp} className="w-full bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-slate-200 active:scale-95 transition-transform mb-4 animate-in slide-in-from-top-4 fade-in duration-300">
                             <Download size={20} /> Instalar Aplicativo
                         </button>
@@ -1644,21 +1654,21 @@ export default function DriverMindApp() {
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowInstallHelp(false)}>
                             <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-bottom-10 duration-300" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xl font-bold text-slate-900">Instalar no iPhone</h3>
+                                    <h3 className="text-xl font-bold text-slate-900">{isIOS ? 'Instalar no iPhone' : 'Instalar Aplicativo'}</h3>
                                     <button onClick={() => setShowInstallHelp(false)} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200"><X size={20} /></button>
                                 </div>
                                 <ol className="space-y-4 text-slate-600 text-sm mb-6">
                                     <li className="flex items-start gap-3">
                                         <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">1</span>
-                                        <span>Toque no botão <strong>Compartilhar</strong> <Share size={14} className="inline mx-1" /> na barra inferior do Safari.</span>
+                                        <span>Toque no botão <strong>{isIOS ? 'Compartilhar' : 'Menu'}</strong> <Share size={14} className="inline mx-1" /> no seu navegador.</span>
                                     </li>
                                     <li className="flex items-start gap-3">
                                         <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">2</span>
-                                        <span>Role para cima e selecione <strong>Adicionar à Tela de Início</strong> (Add to Home Screen).</span>
+                                        <span>Selecione a opção <strong>Adicionar à Tela de Início</strong> (ou Instalar Aplicativo).</span>
                                     </li>
                                     <li className="flex items-start gap-3">
                                         <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">3</span>
-                                        <span>Clique em <strong>Adicionar</strong> no canto superior direito.</span>
+                                        <span>Confirme clicando em <strong>Adicionar</strong>.</span>
                                     </li>
                                 </ol>
                                 <Button fullWidth onClick={() => setShowInstallHelp(false)}>Entendi</Button>
