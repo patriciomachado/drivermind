@@ -1517,9 +1517,16 @@ export default function DriverMindApp() {
     const [loading, setLoading] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false); // Dynamic FAB State
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null); // PWA Install Prompt
+    const [isIOS, setIsIOS] = useState(false);
+    const [showInstallHelp, setShowInstallHelp] = useState(false);
 
-    // Handle PWA Event
+    // Handle PWA Event & Platform Detection
     useEffect(() => {
+        // Check for iOS
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+        setIsIOS(isIosDevice);
+
         const handler = (e: any) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -1529,7 +1536,14 @@ export default function DriverMindApp() {
     }, []);
 
     const installApp = async () => {
-        if (!deferredPrompt) return;
+        if (isIOS) {
+            setShowInstallHelp(true);
+            return;
+        }
+        if (!deferredPrompt) {
+            alert('A instalação pode não estar disponível neste navegador. Tente pelo Chrome ou Edge.');
+            return;
+        }
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
@@ -1620,10 +1634,36 @@ export default function DriverMindApp() {
                 </div>
 
                 <div className="space-y-3">
-                    {deferredPrompt && (
+                    {(deferredPrompt || isIOS) && (
                         <button onClick={installApp} className="w-full bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-slate-200 active:scale-95 transition-transform mb-4 animate-in slide-in-from-top-4 fade-in duration-300">
                             <Download size={20} /> Instalar Aplicativo
                         </button>
+                    )}
+
+                    {showInstallHelp && (
+                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowInstallHelp(false)}>
+                            <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-bottom-10 duration-300" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xl font-bold text-slate-900">Instalar no iPhone</h3>
+                                    <button onClick={() => setShowInstallHelp(false)} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200"><X size={20} /></button>
+                                </div>
+                                <ol className="space-y-4 text-slate-600 text-sm mb-6">
+                                    <li className="flex items-start gap-3">
+                                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">1</span>
+                                        <span>Toque no botão <strong>Compartilhar</strong> <Share size={14} className="inline mx-1" /> na barra inferior do Safari.</span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">2</span>
+                                        <span>Role para cima e selecione <strong>Adicionar à Tela de Início</strong> (Add to Home Screen).</span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">3</span>
+                                        <span>Clique em <strong>Adicionar</strong> no canto superior direito.</span>
+                                    </li>
+                                </ol>
+                                <Button fullWidth onClick={() => setShowInstallHelp(false)}>Entendi</Button>
+                            </div>
+                        </div>
                     )}
 
                     <button onClick={() => setActiveTab('settings')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
