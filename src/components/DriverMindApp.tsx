@@ -7,7 +7,7 @@ import {
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
     TrendingUp, ArrowRight, Lock, Mail, LogIn, Download, BarChart3,
     User as UserIcon, Share2, RefreshCw, Wrench, Trophy, Target,
-    Zap, Bike, X, TrendingDown, Edit2, Settings, Share
+    Zap, Bike, X, TrendingDown, Edit2, Settings
 } from 'lucide-react';
 import SecurityWrapper from './SecurityWrapper';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -1660,7 +1660,7 @@ export default function DriverMindApp() {
                                 <ol className="space-y-4 text-slate-600 text-sm mb-6">
                                     <li className="flex items-start gap-3">
                                         <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">1</span>
-                                        <span>Toque no botão <strong>{isIOS ? 'Compartilhar' : 'Menu'}</strong> <Share size={14} className="inline mx-1" /> no seu navegador.</span>
+                                        <span>Toque no botão <strong>{isIOS ? 'Compartilhar' : 'Menu'}</strong> <Share2 size={14} className="inline mx-1" /> no seu navegador.</span>
                                     </li>
                                     <li className="flex items-start gap-3">
                                         <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">2</span>
