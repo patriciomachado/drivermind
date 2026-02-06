@@ -1707,7 +1707,7 @@ export default function DriverMindApp() {
                     </Button>
                 </div>
 
-                <p className="text-center text-xs text-slate-300 mt-8">DriverMind v0.1.2 • De um motorista, para outros motoristas.</p>
+                <p className="text-center text-xs text-slate-300 mt-8">DriverMind v0.1.3 • De um motorista, para outros motoristas.</p>
             </div>
         );
         return null; // Fallback
