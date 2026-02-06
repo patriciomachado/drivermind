@@ -7,7 +7,7 @@ import {
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
     TrendingUp, ArrowRight, Lock, Mail, LogIn, Download, BarChart3,
     User as UserIcon, Share2, RefreshCw, Wrench, Trophy, Target,
-    Zap, Bike, X, TrendingDown, Edit2, Settings
+    Zap, Bike, X, TrendingDown, Edit2, Settings, Share
 } from 'lucide-react';
 import SecurityWrapper from './SecurityWrapper';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -165,7 +165,7 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
             <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-12 pb-6">
                 {/* Header / Logo */}
                 <div className="flex items-center gap-2 mb-8 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
-                    <img src="/logo.png" className="w-8 h-8 rounded-full border border-white/20" alt="Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                    <img src="/logo.png" className="w-8 h-8 rounded-full border border-white/20" alt="DriverMind Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                     <span className="font-bold text-sm tracking-widest uppercase text-slate-200">Driver Mind</span>
                 </div>
 
