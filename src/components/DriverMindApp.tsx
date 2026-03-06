@@ -1507,10 +1507,13 @@ export default function DriverMindApp() {
                     setSubscriptionStatus(data.status);
                     setTrialDaysRemaining(data.days_remaining || 0);
                 } else {
-                    setSubscriptionStatus('trialing'); // fallback
+                    const errorMsg = await res.text();
+                    console.error('Subscription API failed:', res.status, errorMsg);
+                    setSubscriptionStatus('error');
                 }
-            } catch {
-                setSubscriptionStatus('trialing'); // fallback
+            } catch (e) {
+                console.error('Fetch error for subscription:', e);
+                setSubscriptionStatus('error');
             }
         };
         checkSub();
@@ -1550,6 +1553,24 @@ export default function DriverMindApp() {
     // SUBSCRIPTION CHECK
     if (subscriptionStatus === 'loading') {
         return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-medium">Verificando assinatura...</div>;
+    }
+
+    if (subscriptionStatus === 'error') {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+                <AlertCircle size={48} className="text-red-500 mb-4" />
+                <h1 className="text-xl font-bold text-slate-900 mb-2">Erro de Conexão</h1>
+                <p className="text-slate-500 max-w-sm mb-6">
+                    Não foi possível verificar sua assinatura. Verifique se todas as variáveis de ambiente (Stripe e Supabase) estão configuradas corretamente na Vercel.
+                </p>
+                <button onClick={() => window.location.reload()} className="bg-slate-900 text-white px-6 py-2 rounded-xl font-medium">
+                    Tentar Novamente
+                </button>
+                <button onClick={() => signOut()} className="mt-4 text-slate-400 text-sm underline">
+                    Sair da conta
+                </button>
+            </div>
+        );
     }
 
     if (subscriptionStatus === 'expired' || subscriptionStatus === 'canceled') {
