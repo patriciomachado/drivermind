@@ -6,24 +6,34 @@ export function useSupabase() {
     const { getToken, isSignedIn, isLoaded } = useAuth();
     const [supabase, setSupabase] = useState<any>(null);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hasAlerted = useRef(false);
 
     const refreshClient = useCallback(async () => {
         if (!isLoaded || !isSignedIn) {
-            console.log('[useSupabase] Auth not ready yet. isLoaded:', isLoaded, 'isSignedIn:', isSignedIn);
             return;
         }
         try {
             const token = await getToken({ template: 'supabase' });
             if (token) {
                 setSupabase(createClerkSupabaseClient(token));
-            } else {
-                console.error('[useSupabase] getToken returned null. Check Clerk JWT template "supabase" exists.');
-                // Fallback: try without template
+                hasAlerted.current = false;
+            } else if (!hasAlerted.current) {
+                hasAlerted.current = true;
+                // Try fallback token to diagnose
                 const fallbackToken = await getToken();
-                console.log('[useSupabase] Fallback token (no template):', fallbackToken ? 'OK' : 'NULL');
+                alert(
+                    `[DEBUG] Token Supabase é null.\n` +
+                    `isLoaded: ${isLoaded}\n` +
+                    `isSignedIn: ${isSignedIn}\n` +
+                    `Token padrão: ${fallbackToken ? 'OK' : 'NULL'}\n\n` +
+                    `Verifique se o JWT Template "supabase" existe no Clerk Dashboard.`
+                );
             }
-        } catch (e) {
-            console.error("[useSupabase] Error getting clerk token:", e);
+        } catch (e: any) {
+            if (!hasAlerted.current) {
+                hasAlerted.current = true;
+                alert(`[DEBUG] Erro ao obter token: ${e.message || e}`);
+            }
         }
     }, [getToken, isSignedIn, isLoaded]);
 
