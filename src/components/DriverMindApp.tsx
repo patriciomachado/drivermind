@@ -1595,7 +1595,11 @@ export default function DriverMindApp() {
 
                 <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center mb-6">
                     <div className="w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-xl shadow-indigo-200 relative">
-                        {user.primaryEmailAddress?.emailAddress?.[0].toUpperCase()}
+                        {user.hasImage ? (
+                            <img src={user.imageUrl} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            user.primaryEmailAddress?.emailAddress?.[0].toUpperCase()
+                        )}
                         <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 border-4 border-white rounded-full"></div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-900">{user.primaryEmailAddress?.emailAddress?.split('@')[0]}</h3>
