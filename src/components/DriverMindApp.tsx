@@ -418,7 +418,14 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     }, [supabase]);
 
     const handleSubmit = async () => {
-        if (!newVehicle.name || !supabase) return;
+        if (!newVehicle.name) {
+            alert('Por favor, preencha o apelido do veículo.');
+            return;
+        }
+        if (!supabase) {
+            alert('Erro de conexão: o cliente Supabase não está pronto. Tente recarregar a página (F5) e fazer login novamente.');
+            return;
+        }
         const { data, error } = await supabase.from('vehicles').insert({ ...newVehicle, user_id: userId }).select().single();
 
         if (error) {
