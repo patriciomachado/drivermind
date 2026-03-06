@@ -262,6 +262,13 @@ const SalesView = ({ onLogout }: { onLogout: () => void }) => {
         setLoading(true);
         try {
             const res = await fetch('/api/checkout', { method: 'POST' });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                alert(errorText || 'Erro ao iniciar pagamento.');
+                return;
+            }
+
             const data = await res.json();
             if (data.url) {
                 window.location.href = data.url;
@@ -269,7 +276,8 @@ const SalesView = ({ onLogout }: { onLogout: () => void }) => {
                 alert('Erro ao iniciar pagamento. Tente novamente.');
             }
         } catch (e) {
-            alert('Erro de conexão. Tente novamente.');
+            console.error('Checkout error:', e);
+            alert('Erro de conexão com o servidor de pagamento.');
         } finally {
             setLoading(false);
         }

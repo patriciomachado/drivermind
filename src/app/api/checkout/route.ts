@@ -14,12 +14,18 @@ export async function POST(req: Request) {
             return new NextResponse('Unauthorized', { status: 401 });
         }
 
+        const priceId = process.env.STRIPE_PRICE_ID;
+        if (!priceId) {
+            console.error('Missing STRIPE_PRICE_ID environment variable.');
+            return new NextResponse('Configuração de preço incompleta. Fale com o suporte.', { status: 400 });
+        }
+
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             payment_method_types: ['card'],
             line_items: [
                 {
-                    price: process.env.STRIPE_PRICE_ID,
+                    price: priceId,
                     quantity: 1,
                 },
             ],
