@@ -255,10 +255,24 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
 };
 
 // --- SALES VIEW (TRIAL EXPIRED) ---
-const SalesView = ({ onSubscribe, onLogout }: any) => {
-    const handleWhatsApp = () => {
-        const message = encodeURIComponent("Olá! Meu período de teste no DriverMind acabou e gostaria de assinar uma licença. Como procedo?");
-        window.open(`https://wa.me/5548992253003?text=${message}`, '_blank');
+const SalesView = ({ onLogout }: { onLogout: () => void }) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubscribe = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/checkout', { method: 'POST' });
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert('Erro ao iniciar pagamento. Tente novamente.');
+            }
+        } catch (e) {
+            alert('Erro de conexão. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -272,38 +286,34 @@ const SalesView = ({ onSubscribe, onLogout }: any) => {
 
             <h1 className="text-3xl font-bold mb-2">Seu teste acabou!</h1>
             <p className="text-slate-400 mb-8 max-w-xs mx-auto">
-                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, escolha seu plano.
+                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, assine o plano Pro.
             </p>
 
             <div className="bg-[#1E293B] p-6 rounded-3xl border border-indigo-500/30 shadow-2xl w-full max-w-sm relative overflow-hidden mb-8">
                 <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-500 to-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
-                    OFERTA ESPECIAL
+                    PLANO PRO
                 </div>
 
-                <div className="space-y-4 mb-6">
-                    <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Semestral (6 meses)</div>
-                        <div className="text-2xl font-bold text-white">R$ 16,90 <span className="text-xs font-normal text-slate-400">/total</span></div>
-                        <div className="text-[10px] text-emerald-400">Sai R$ 2,81 por mês!</div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-indigo-500/50 relative">
-                        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">MELHOR VALOR</div>
-                        <div className="text-xs text-indigo-200 uppercase font-bold mb-1">Anual (12 meses)</div>
-                        <div className="text-3xl font-bold text-white">R$ 21,90 <span className="text-xs font-normal text-slate-400">/ano</span></div>
-                        <div className="text-[10px] text-emerald-400 font-bold">Sai R$ 1,82 por mês! 🔥</div>
-                    </div>
+                <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-6 rounded-xl border border-indigo-500/50 mb-6">
+                    <div className="text-xs text-indigo-200 uppercase font-bold mb-1">Mensal</div>
+                    <div className="text-4xl font-bold text-white">R$ 7,80 <span className="text-sm font-normal text-slate-400">/mês</span></div>
+                    <div className="text-xs text-emerald-400 font-bold mt-1">Menos de R$ 0,26 por dia! 🔥</div>
                 </div>
 
-                <p className="text-xs text-slate-400 mb-4 px-4">
-                    A liberação é feita manualmente. Clique abaixo para chamar no WhatsApp e ativar sua conta.
-                </p>
+                <div className="space-y-2 text-left mb-6 px-2">
+                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Controle ilimitado de ganhos</div>
+                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Histórico completo</div>
+                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Relatórios em PDF</div>
+                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Manutenções do veículo</div>
+                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Suporte prioritário</div>
+                </div>
 
                 <button
-                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                    onClick={handleWhatsApp}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-4 rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_50px_rgba(16,185,129,0.6)] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    onClick={handleSubscribe}
+                    disabled={loading}
                 >
-                    <Share2 size={20} /> FALAR NO WHATSAPP
+                    {loading ? 'Redirecionando...' : '✨ ASSINAR AGORA'}
                 </button>
             </div>
 
@@ -1452,6 +1462,7 @@ const FinishDayView = ({ userId, vehicleId, onBack }: { userId: string, vehicleI
  */
 export default function DriverMindApp() {
     const { user, isLoaded } = useUser();
+    const { signOut } = useClerk();
     const supabase = useSupabase();
     const [activeTab, setActiveTab] = useState('today');
     const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null);
@@ -1461,6 +1472,8 @@ export default function DriverMindApp() {
     const [isStandalone, setIsStandalone] = useState(false);
     const [showInstallHelp, setShowInstallHelp] = useState(false);
     const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
+    const [subscriptionStatus, setSubscriptionStatus] = useState<string>('loading');
+    const [trialDaysRemaining, setTrialDaysRemaining] = useState(0);
 
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
@@ -1482,6 +1495,26 @@ export default function DriverMindApp() {
             window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkStandalone);
         };
     }, []);
+
+    // Check subscription status
+    useEffect(() => {
+        if (!user) return;
+        const checkSub = async () => {
+            try {
+                const res = await fetch('/api/subscription');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSubscriptionStatus(data.status);
+                    setTrialDaysRemaining(data.days_remaining || 0);
+                } else {
+                    setSubscriptionStatus('trialing'); // fallback
+                }
+            } catch {
+                setSubscriptionStatus('trialing'); // fallback
+            }
+        };
+        checkSub();
+    }, [user]);
 
     useEffect(() => {
         const init = async () => {
@@ -1514,16 +1547,13 @@ export default function DriverMindApp() {
         return authView === 'signup' ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" /></div> : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" /></div>;
     }
 
-    // CHECK TRIAL EXPIRATION
-    const TRIAL_DAYS = 7;
-    const daysSinceCreation = user.createdAt ? Math.floor((new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 3600 * 24)) : 0;
+    // SUBSCRIPTION CHECK
+    if (subscriptionStatus === 'loading') {
+        return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-medium">Verificando assinatura...</div>;
+    }
 
-    // Check both app_metadata (secure) and user_metadata (dashboard editable)
-    const isPro = user.publicMetadata?.subscription_status === 'active' || user.publicMetadata?.subscription_status === 'active';
-    const isTrialExpired = false; // daysSinceCreation > TRIAL_DAYS && !isPro;
-
-    if (isTrialExpired) {
-        return <SalesView onSubscribe={() => alert('Em desenvolvimento')} onLogout={() => window.location.reload()} />;
+    if (subscriptionStatus === 'expired' || subscriptionStatus === 'canceled') {
+        return <SalesView onLogout={() => signOut()} />;
     }
 
     const renderContent = () => {

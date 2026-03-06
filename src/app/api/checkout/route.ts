@@ -1,48 +1,41 @@
-
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase-server';
+import { auth } from '@clerk/nextjs/server';
 
-// Use a dummy key for build time if env var is missing
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_build_dummy_key';
-
-const stripe = new Stripe(stripeSecretKey, {
-    apiVersion: '2025-12-15.clover', // Updated to match installed package
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_build_dummy_key', {
+    apiVersion: '2025-12-15.clover',
 });
 
 export async function POST(req: Request) {
     try {
-        const { priceId } = await req.json();
+        const { userId } = await auth();
 
-        // 1. Get the user from Supabase Auth
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        if (!userId) {
             return new NextResponse('Unauthorized', { status: 401 });
         }
 
-        // 2. Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
-            payment_method_types: ['card', 'boleto'], // Pix requires extra setup usually, but boleto works
+            payment_method_types: ['card'],
             line_items: [
                 {
-                    price: priceId || process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+                    price: process.env.STRIPE_PRICE_ID,
                     quantity: 1,
                 },
             ],
-            metadata: {
-                user_id: user.id, // CRITICAL: This links the payment to the Supabase User
+            subscription_data: {
+                trial_period_days: 14,
             },
-            success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}?canceled=true`,
-            customer_email: user.email,
+            metadata: {
+                user_id: userId,
+            },
+            success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.vercel.app'}?success=true`,
+            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.vercel.app'}?canceled=true`,
         });
 
         return NextResponse.json({ url: session.url });
     } catch (error: any) {
-        console.error('Stripe Error:', error);
+        console.error('Stripe Checkout Error:', error);
         return new NextResponse(`Internal Error: ${error.message}`, { status: 500 });
     }
 }
