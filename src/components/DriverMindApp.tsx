@@ -1591,7 +1591,19 @@ export default function DriverMindApp() {
                         <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 border-4 border-white rounded-full"></div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-900">{user.primaryEmailAddress?.emailAddress?.split('@')[0]}</h3>
-                    <p className="text-slate-400 text-sm mb-2">{user.primaryEmailAddress?.emailAddress}</p>
+                    <p className="text-slate-400 text-sm mb-4">{user.primaryEmailAddress?.emailAddress}</p>
+
+                    {subscriptionStatus === 'trialing' && (
+                        <div className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold mb-3 border border-amber-200">
+                            ⏳ {trialDaysRemaining} dias grátis restantes
+                        </div>
+                    )}
+                    {subscriptionStatus === 'active' && (
+                        <div className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold mb-3 border border-emerald-200 flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Assinante PRO
+                        </div>
+                    )}
+
                     <div className="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold text-slate-500">
                         Membro desde {new Date(user.createdAt || Date.now()).getFullYear()}
                     </div>
