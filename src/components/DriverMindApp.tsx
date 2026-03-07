@@ -1720,8 +1720,8 @@ export default function DriverMindApp() {
                                 <X size={20} />
                             </button>
 
-                            <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-inner">
-                                <MonitorSmartphone size={32} />
+                            <div className="w-full flex justify-center mb-4">
+                                <img src="/assets/pwa-guide.png" alt="Guia de Instalação" className="h-32 object-contain rounded-xl" />
                             </div>
 
                             <h3 className="text-xl font-bold text-center text-slate-800 mb-2">Instale o DriverMind</h3>
