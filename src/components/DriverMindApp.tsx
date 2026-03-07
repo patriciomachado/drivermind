@@ -846,7 +846,15 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 // --- HISTORY DETAIL MODAL (NEW) ---
 const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, vehicles: Record<string, string>, onClose: () => void, onUpdate?: () => void }) => {
     const supabase = useSupabase();
-    if (!day) return null;
+
+    // Manage local state so we can delete without closing the modal
+    const [liveDay, setLiveDay] = useState<any>(null);
+
+    useEffect(() => {
+        if (day) setLiveDay(day);
+    }, [day]);
+
+    if (!liveDay) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
             <div className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
@@ -861,8 +869,8 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                     <div className="mt-4 flex gap-4">
                         <div>
                             <div className="text-[10px] text-slate-400 uppercase font-bold">Lucro Líquido</div>
-                            <div className={`text-2xl font-bold ${day.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {formatCurrency(day.profit)}
+                            <div className={`text-2xl font-bold ${liveDay.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {formatCurrency(liveDay.profit)}
                             </div>
                         </div>
                     </div>
@@ -875,8 +883,8 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                             <TrendingUp size={16} className="text-emerald-500" /> Ganhos
                         </h4>
                         <div className="space-y-2">
-                            {day.earnings && day.earnings.length > 0 ? (
-                                day.earnings.map((e: any) => (
+                            {liveDay.earnings && liveDay.earnings.length > 0 ? (
+                                liveDay.earnings.map((e: any) => (
                                     <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 group">
                                         <div className="flex-1">
                                             <span className="font-medium text-slate-600">{e.platform}</span>
@@ -886,10 +894,17 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                                             <button
                                                 onClick={async (ev) => {
                                                     ev.stopPropagation();
-                                                    // if (!confirm('Excluir este ganho?')) return; // Removed request
                                                     await supabase.from('earnings').delete().eq('id', e.id);
+
+                                                    // Update local state to avoid closing modal
+                                                    setLiveDay((prev: any) => ({
+                                                        ...prev,
+                                                        earnings: prev.earnings.filter((item: any) => item.id !== e.id),
+                                                        income: prev.income - e.amount,
+                                                        profit: prev.profit - e.amount
+                                                    }));
+
                                                     if (onUpdate) onUpdate();
-                                                    else onClose();
                                                 }}
                                                 className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             >
@@ -908,8 +923,8 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                             <TrendingDown size={16} className="text-red-500" /> Despesas
                         </h4>
                         <div className="space-y-2">
-                            {day.expenses && day.expenses.length > 0 ? (
-                                day.expenses.map((e: any) => (
+                            {liveDay.expenses && liveDay.expenses.length > 0 ? (
+                                liveDay.expenses.map((e: any) => (
                                     <div key={e.id} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 group">
                                         <div className="flex flex-col flex-1">
                                             <span className="font-medium text-slate-600 capitalize">{e.category}</span>
@@ -920,10 +935,17 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                                             <button
                                                 onClick={async (ev) => {
                                                     ev.stopPropagation();
-                                                    // if (!confirm('Excluir esta despesa?')) return; // Removed request
                                                     await supabase.from('expenses').delete().eq('id', e.id);
+
+                                                    // Update local state to avoid closing modal
+                                                    setLiveDay((prev: any) => ({
+                                                        ...prev,
+                                                        expenses: prev.expenses.filter((item: any) => item.id !== e.id),
+                                                        expense: prev.expense - e.amount,
+                                                        profit: prev.profit + e.amount
+                                                    }));
+
                                                     if (onUpdate) onUpdate();
-                                                    else onClose();
                                                 }}
                                                 className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             >
@@ -1198,7 +1220,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             })}
 
             {/* Modal */}
-            <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} vehicles={vehicles} />
+            <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} onUpdate={() => fetchHistory()} vehicles={vehicles} />
         </div>
     );
 };
@@ -1490,7 +1512,7 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                         }}
                         vehicles={{ [vehicle.id]: vehicle.name }}
                         onClose={() => setShowReportModal(false)}
-                        onUpdate={() => { setShowReportModal(false); fetchData(); }}
+                        onUpdate={() => fetchData()}
                     />
                 )
             }
