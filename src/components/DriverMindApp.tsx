@@ -42,6 +42,17 @@ type WorkDay = {
     created_at: string;
 };
 
+type FixedCost = {
+    id: string;
+    user_id: string;
+    vehicle_id: string;
+    type: string;
+    cost: number;
+    date: string;
+    note: string;
+    created_at: string;
+};
+
 type ExpenseCategory = 'combustível' | 'alimentação' | 'manutencao' | 'outros';
 
 type Expense = {
@@ -481,6 +492,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const openMaintenance = async (v: Vehicle) => {
         if (!supabase) return;
         setMaintenanceVehicle(v);
+        setFixedCostVehicle(null);
         const { data } = await supabase.from('maintenances').select('*').eq('vehicle_id', v.id).order('date', { ascending: false });
         setMaintenances(data || []);
         setIsAddingMaint(false);
@@ -525,6 +537,59 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             alert('Erro ao excluir: ' + error.message);
         } else {
             if (maintenanceVehicle) openMaintenance(maintenanceVehicle);
+        }
+    };
+
+    // Fixed Costs Logic
+    const [fixedCostVehicle, setFixedCostVehicle] = useState<Vehicle | null>(null);
+    const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
+    const [newFixedCost, setNewFixedCost] = useState<{ type: string, cost: string, note: string, date: string }>({ type: 'aluguel', cost: '', note: '', date: new Date().toISOString().substring(0, 10) });
+    const [isAddingFixedCost, setIsAddingFixedCost] = useState(false);
+    const [fixedCostLoading, setFixedCostLoading] = useState(false);
+
+    const openFixedCosts = async (v: Vehicle) => {
+        if (!supabase) return;
+        setFixedCostVehicle(v);
+        setMaintenanceVehicle(null);
+        const { data } = await supabase.from('fixed_costs').select('*').eq('vehicle_id', v.id).order('date', { ascending: false });
+        setFixedCosts(data || []);
+        setIsAddingFixedCost(false);
+    };
+
+    const saveFixedCost = async () => {
+        if (!fixedCostVehicle || !supabase) return;
+        if (!newFixedCost.cost) {
+            alert('Por favor, informe o valor.');
+            return;
+        }
+
+        setFixedCostLoading(true);
+        const { error } = await supabase.from('fixed_costs').insert({
+            user_id: userId,
+            vehicle_id: fixedCostVehicle.id,
+            type: newFixedCost.type,
+            cost: parseFloat(newFixedCost.cost),
+            note: newFixedCost.note,
+            date: newFixedCost.date
+        });
+
+        if (error) {
+            alert('Erro ao salvar: ' + error.message);
+        } else {
+            openFixedCosts(fixedCostVehicle);
+            setNewFixedCost({ type: 'aluguel', cost: '', note: '', date: new Date().toISOString().substring(0, 10) });
+            setIsAddingFixedCost(false);
+        }
+        setFixedCostLoading(false);
+    };
+
+    const deleteFixedCost = async (id: string) => {
+        if (!supabase) return;
+        const { error } = await supabase.from('fixed_costs').delete().eq('id', id);
+        if (error) {
+            alert('Erro ao excluir: ' + error.message);
+        } else {
+            if (fixedCostVehicle) openFixedCosts(fixedCostVehicle);
         }
     };
 
@@ -586,6 +651,15 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                             className={`p-2 rounded-full text-white transition-colors border ${maintenanceVehicle?.id === v.id ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-indigo-500 hover:bg-indigo-400 border-transparent'}`}
                                         >
                                             <Wrench size={18} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                fixedCostVehicle?.id === v.id ? setFixedCostVehicle(null) : openFixedCosts(v);
+                                            }}
+                                            className={`p-2 rounded-full text-white transition-colors border ${fixedCostVehicle?.id === v.id ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-indigo-500 hover:bg-indigo-400 border-transparent'}`}
+                                        >
+                                            <Wallet size={18} />
                                         </button>
                                         <div className="p-2 bg-indigo-500 rounded-full text-white"><CheckCircle2 size={18} /></div>
                                     </div>
@@ -668,6 +742,82 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                         </div>
                                         <Button variant="outline" size="sm" fullWidth onClick={() => setIsAddingMaint(true)} className="bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-50">
                                             <Plus size={16} className="mr-1" /> Nova Manutenção
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* INLINE FIXED COSTS SECTION */}
+                        {fixedCostVehicle?.id === v.id && (
+                            <div className="w-full bg-slate-50/80 backdrop-blur-sm rounded-b-3xl -mt-6 pt-10 pb-6 px-4 border-x border-b border-indigo-500/10 shadow-inner mb-4 animate-in slide-in-from-top-4 fade-in duration-300 relative z-0 origin-top">
+                                <div className="flex justify-between items-center mb-4 px-2">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                        <Wallet size={14} /> Custos Fixos
+                                    </h3>
+                                    <button onClick={() => setFixedCostVehicle(null)} className="p-1.5 bg-white rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm">
+                                        <X size={14} />
+                                    </button>
+                                </div>
+
+                                {isAddingFixedCost ? (
+                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+                                        <h3 className="font-bold text-indigo-600 mb-3 text-sm">Novo Custo Fixo</h3>
+                                        <div className="grid grid-cols-2 gap-2 mb-3">
+                                            <button onClick={() => setNewFixedCost({ ...newFixedCost, type: 'aluguel' })} className={`p-2 rounded-xl border font-bold text-xs ${newFixedCost.type === 'aluguel' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Aluguel</button>
+                                            <button onClick={() => setNewFixedCost({ ...newFixedCost, type: 'prestacao' })} className={`p-2 rounded-xl border font-bold text-xs ${newFixedCost.type === 'prestacao' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Prestação</button>
+                                            <button onClick={() => setNewFixedCost({ ...newFixedCost, type: 'seguro' })} className={`p-2 rounded-xl border font-bold text-xs ${newFixedCost.type === 'seguro' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Seguro</button>
+                                            <button onClick={() => setNewFixedCost({ ...newFixedCost, type: 'outros' })} className={`p-2 rounded-xl border font-bold text-xs ${newFixedCost.type === 'outros' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Outros</button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Input label="Valor R$" type="number" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value })} />
+                                            <Input label="Data de Vencimento/Pagamento" type="date" value={newFixedCost.date} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, date: e.target.value })} />
+                                            <Input label="Obs" value={newFixedCost.note} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, note: e.target.value })} placeholder="Opcional" />
+                                        </div>
+
+                                        <div className="flex gap-2 mt-4">
+                                            <Button variant="ghost" size="sm" fullWidth onClick={() => setIsAddingFixedCost(false)}>Cancelar</Button>
+                                            <Button size="sm" fullWidth onClick={saveFixedCost} disabled={fixedCostLoading}>
+                                                {fixedCostLoading ? 'Salvando...' : 'Salvar'}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                            {fixedCosts.length === 0 ? (
+                                                <div className="text-center py-6 text-slate-400 bg-white rounded-xl border border-slate-100 border-dashed text-sm">
+                                                    Nenhum custo fixo registrado.
+                                                </div>
+                                            ) : (
+                                                fixedCosts.map(fc => (
+                                                    <div key={fc.id} className="p-3 rounded-xl bg-white border border-slate-100 shadow-sm flex justify-between items-center group">
+                                                        <div className="flex gap-3 items-center">
+                                                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                                                <Wallet size={14} />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-bold text-slate-700 text-sm capitalize">{fc.type}</h4>
+                                                                <p className="text-[10px] text-slate-400">{new Date(fc.date).toLocaleDateString('pt-BR')} {fc.note ? `• ${fc.note}` : ''}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right flex items-center gap-3">
+                                                            <div>
+                                                                <span className="font-bold text-slate-900 text-sm block">{formatCurrency(fc.cost)}</span>
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); deleteFixedCost(fc.id); }}
+                                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                        <Button variant="outline" size="sm" fullWidth onClick={() => setIsAddingFixedCost(true)} className="bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+                                            <Plus size={16} className="mr-1" /> Novo Custo Fixo
                                         </Button>
                                     </div>
                                 )}
