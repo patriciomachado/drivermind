@@ -847,12 +847,8 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, vehicles: Record<string, string>, onClose: () => void, onUpdate?: () => void }) => {
     const supabase = useSupabase();
 
-    // Manage local state so we can delete without closing the modal
-    const [liveDay, setLiveDay] = useState<any>(null);
-
-    useEffect(() => {
-        if (day) setLiveDay(day);
-    }, [day]);
+    // Initialize local state once to prevent flickering while background fetches occur
+    const [liveDay, setLiveDay] = useState<any>(day);
 
     if (!liveDay) return null;
     return (
@@ -1220,7 +1216,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             })}
 
             {/* Modal */}
-            <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} onUpdate={() => fetchHistory()} vehicles={vehicles} />
+            {selectedDay && <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} onUpdate={() => fetchHistory()} vehicles={vehicles} />}
         </div>
     );
 };
