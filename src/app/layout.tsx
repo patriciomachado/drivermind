@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "DriverMind - Controle Financeiro para Motoristas de App",
   description: "Otimize seus ganhos e controle seus gastos como motorista Uber/99. Gestão financeira inteligente, simplificada e focada no seu lucro real.",
   manifest: "/manifest.json",
-  metadataBase: new URL('https://drivermind.vercel.app'),
+  metadataBase: new URL('https://www.drivermind.com.br'),
   applicationName: "DriverMind",
   keywords: ["motorista de aplicativo", "uber", "99", "controle financeiro", "gestão de ganhos", "carro de aplicativo"],
   authors: [{ name: "DriverMind Team" }],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DriverMind - Controle Financeiro para Motoristas",
     description: "Transforme sua direção em um negócio lucrativo. Saiba exatamente quanto ganha e gasta por km rodado.",
-    url: 'https://drivermind.vercel.app',
+    url: 'https://www.drivermind.com.br',
     siteName: 'DriverMind',
     images: [
       {
