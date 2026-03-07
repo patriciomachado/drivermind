@@ -543,7 +543,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     // Fixed Costs Logic
     const [fixedCostVehicle, setFixedCostVehicle] = useState<Vehicle | null>(null);
     const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
-    const [newFixedCost, setNewFixedCost] = useState<{ type: string, cost: string, note: string, date: string }>({ type: 'aluguel', cost: '', note: '', date: new Date().toISOString().substring(0, 10) });
+    const [newFixedCost, setNewFixedCost] = useState<{ type: string, cost: string, note: string, day: string }>({ type: 'aluguel', cost: '', note: '', day: '1' });
     const [isAddingFixedCost, setIsAddingFixedCost] = useState(false);
     const [fixedCostLoading, setFixedCostLoading] = useState(false);
 
@@ -563,6 +563,17 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             return;
         }
 
+        const dayNum = parseInt(newFixedCost.day);
+        if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
+            alert('O dia do vencimento deve ser entre 1 e 31.');
+            return;
+        }
+
+        // We use the current year/month and the selected day to satisfy the 'date' column schema, 
+        // even though we only care about the day practically.
+        const now = new Date();
+        const dummyDate = new Date(now.getFullYear(), now.getMonth(), dayNum).toISOString().substring(0, 10);
+
         setFixedCostLoading(true);
         const { error } = await supabase.from('fixed_costs').insert({
             user_id: userId,
@@ -570,14 +581,14 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             type: newFixedCost.type,
             cost: parseFloat(newFixedCost.cost),
             note: newFixedCost.note,
-            date: newFixedCost.date
+            date: dummyDate // Store the constructed date
         });
 
         if (error) {
             alert('Erro ao salvar: ' + error.message);
         } else {
             openFixedCosts(fixedCostVehicle);
-            setNewFixedCost({ type: 'aluguel', cost: '', note: '', date: new Date().toISOString().substring(0, 10) });
+            setNewFixedCost({ type: 'aluguel', cost: '', note: '', day: '1' });
             setIsAddingFixedCost(false);
         }
         setFixedCostLoading(false);
@@ -772,7 +783,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                         <div className="space-y-3">
                                             <div className="grid grid-cols-2 gap-3">
                                                 <Input label="Valor R$" type="number" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value })} />
-                                                <Input label="Vencimento" type="date" value={newFixedCost.date} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, date: e.target.value })} />
+                                                <Input label="Dia Vencimento" type="number" min="1" max="31" value={newFixedCost.day} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, day: e.target.value })} placeholder="Ex: 5" />
                                             </div>
                                             <Input label="Obs (Opcional)" value={newFixedCost.note} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, note: e.target.value })} />
                                         </div>
@@ -800,7 +811,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-slate-700 text-sm capitalize">{fc.type}</h4>
-                                                                <p className="text-[10px] text-slate-400">{new Date(fc.date).toLocaleDateString('pt-BR')} {fc.note ? `• ${fc.note}` : ''}</p>
+                                                                <p className="text-[10px] text-slate-400">Todo dia {new Date(fc.date).getUTCDate()} {fc.note ? `• ${fc.note}` : ''}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right flex items-center gap-3">
