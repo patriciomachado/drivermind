@@ -770,9 +770,11 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                             <button onClick={() => setNewFixedCost({ ...newFixedCost, type: 'outros' })} className={`p-2 rounded-xl border font-bold text-xs ${newFixedCost.type === 'outros' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Outros</button>
                                         </div>
                                         <div className="space-y-3">
-                                            <Input label="Valor R$" type="number" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value })} />
-                                            <Input label="Data de Vencimento/Pagamento" type="date" value={newFixedCost.date} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, date: e.target.value })} />
-                                            <Input label="Obs" value={newFixedCost.note} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, note: e.target.value })} placeholder="Opcional" />
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <Input label="Valor R$" type="number" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value })} />
+                                                <Input label="Vencimento" type="date" value={newFixedCost.date} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, date: e.target.value })} />
+                                            </div>
+                                            <Input label="Obs (Opcional)" value={newFixedCost.note} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, note: e.target.value })} />
                                         </div>
 
                                         <div className="flex gap-2 mt-4">
