@@ -952,6 +952,8 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     const [selectedDay, setSelectedDay] = useState<any>(null); // For Detail Modal
     const [loading, setLoading] = useState(true);
     const [showChart, setShowChart] = useState(false);
+    const [allMaintenances, setAllMaintenances] = useState<any[]>([]);
+    const [totalFixedCosts, setTotalFixedCosts] = useState(0);
 
     const fetchHistory = async () => {
         if (!supabase) return;
@@ -982,6 +984,15 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             };
         });
         setHistory(compiled);
+
+        // Fetch user's fixed costs and maintenances
+        const { data: fcData } = await supabase.from('fixed_costs').select('cost').eq('user_id', userId);
+        const fcTotal = (fcData || []).reduce((acc: any, curr: any) => acc + curr.cost, 0);
+        setTotalFixedCosts(fcTotal);
+
+        const { data: maintData } = await supabase.from('maintenances').select('*').eq('user_id', userId);
+        setAllMaintenances(maintData || []);
+
         setLoading(false);
     };
 
@@ -1078,10 +1089,19 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
 
             {monthKeys.map(month => {
                 const days = groups[month];
-                const mProfit = days.reduce((a, b) => a + b.profit, 0);
-                const mKm = days.reduce((a, b) => a + (b.km_end - b.km_start), 0);
-                const mCost = days.reduce((a, b) => a + b.expense, 0);
                 const mIncome = days.reduce((a, b) => a + b.income, 0);
+                const mVariables = days.reduce((a, b) => a + b.expense, 0);
+
+                // Filter maintenances for this month
+                const monthMaintenances = allMaintenances.filter(m => {
+                    return new Date(m.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }) === month;
+                });
+                const mMaintenancesCost = monthMaintenances.reduce((a, b) => a + b.cost, 0);
+
+                // Total Cost = Variables (Fuel/Food) + Maintenances + Fixed Costs
+                const mCost = mVariables + mMaintenancesCost + totalFixedCosts;
+                const mProfit = mIncome - mCost;
+                const mKm = days.reduce((a, b) => a + (b.km_end - b.km_start), 0);
                 const costPerKm = mKm > 0 ? mCost / mKm : 0;
 
                 const dailyGoal = ((user.unsafeMetadata?.daily_goal as number) as number) || 300;
@@ -1117,9 +1137,25 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                     <div className="text-3xl font-bold text-white mt-1">{formatCurrency(mIncome)}</div>
                                     <div className="text-[10px] text-slate-400 mt-1">Meta: {formatCurrency(monthlyGoal)} ({Math.round(progress)}%)</div>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-right flex flex-col items-end">
                                     <span className="text-xs text-slate-400 font-bold uppercase">Lucro Líquido</span>
                                     <div className={`text-lg font-bold ${mProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(mProfit)}</div>
+                                </div>
+                            </div>
+
+                            {/* Cost Breakdown */}
+                            <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-800/50 p-3 rounded-2xl border border-white/5">
+                                <div className="text-center">
+                                    <span className="block text-[9px] text-slate-400 uppercase font-bold mb-0.5">Operacional</span>
+                                    <span className="text-xs font-bold text-red-300">-{formatCurrency(mVariables)}</span>
+                                </div>
+                                <div className="text-center border-x border-slate-700/50">
+                                    <span className="block text-[9px] text-slate-400 uppercase font-bold mb-0.5">Manutenções</span>
+                                    <span className="text-xs font-bold text-amber-300">-{formatCurrency(mMaintenancesCost)}</span>
+                                </div>
+                                <div className="text-center">
+                                    <span className="block text-[9px] text-slate-400 uppercase font-bold mb-0.5">Fixos (Mês)</span>
+                                    <span className="text-xs font-bold text-indigo-300">-{formatCurrency(totalFixedCosts)}</span>
                                 </div>
                             </div>
 
