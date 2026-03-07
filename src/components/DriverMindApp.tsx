@@ -470,7 +470,6 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Remover veículo?')) return;
         if (!supabase) return;
         const { error } = await supabase.from('vehicles').delete().eq('id', id);
         if (error) {
@@ -530,7 +529,6 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 
     const deleteMaintenance = async (id: string) => {
         if (!supabase) return;
-        // if (!confirm('Excluir esta manutenção?')) return; // Immediate delete
         const { error } = await supabase.from('maintenances').delete().eq('id', id);
         if (error) {
             alert('Erro ao excluir: ' + error.message);
@@ -1042,7 +1040,6 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza? Isso apagará todos os ganhos e despesas deste dia.')) return;
         // Cascade delete should handle children if DB configured, mostly we need to manually delete if no cascade.
         // Assuming Supabase RLS allows.
         await supabase.from('earnings').delete().eq('work_day_id', id);
@@ -1483,7 +1480,6 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                                 <CheckCircle2 size={18} /> Dia Finalizado
                             </div>
                             <Button variant="outline" onClick={async () => {
-                                if (!confirm('Deseja reabrir este dia?')) return;
                                 await supabase.from('work_days').update({ status: 'open', km_end: null }).eq('id', session.id);
                                 fetchData();
                             }}>Reabrir Dia</Button>
