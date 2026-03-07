@@ -1638,14 +1638,6 @@ export default function DriverMindApp() {
                         <div className="flex items-center gap-3"><Share2 size={20} className="text-indigo-500" /> Compartilhar App</div>
                         <ChevronRight size={16} className="text-slate-300" />
                     </button>
-                    <button onClick={() => window.open('mailto:suporte@drivermind.com')} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
-                        <div className="flex items-center gap-3"><AlertCircle size={20} className="text-indigo-500" /> Suporte (Email)</div>
-                        <ChevronRight size={16} className="text-slate-300" />
-                    </button>
-                    <button onClick={() => window.open('https://wa.me/5548992253003?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20DriverMind', '_blank')} className="w-full bg-[#25D366] p-4 rounded-2xl border border-green-500 flex items-center justify-between text-white font-bold hover:bg-[#20bd5a] transition-colors active:scale-95 shadow-lg shadow-green-100">
-                        <div className="flex items-center gap-3"><Share2 size={20} className="text-white" /> Falar no WhatsApp</div>
-                        <ChevronRight size={16} className="text-green-100" />
-                    </button>
                 </div>
 
                 <div className="mt-8">
