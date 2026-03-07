@@ -10,7 +10,7 @@ import {
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
     TrendingUp, ArrowRight, Lock, Mail, LogIn, Download, BarChart3,
     User as UserIcon, Share2, RefreshCw, Wrench, Trophy, Target,
-    Zap, Bike, X, TrendingDown, Edit2, Settings
+    Zap, Bike, X, TrendingDown, Edit2, Settings, MonitorSmartphone
 } from 'lucide-react';
 import SecurityWrapper from './SecurityWrapper';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -1638,6 +1638,13 @@ export default function DriverMindApp() {
                         <div className="flex items-center gap-3"><Share2 size={20} className="text-indigo-500" /> Compartilhar App</div>
                         <ChevronRight size={16} className="text-slate-300" />
                     </button>
+                    <button onClick={() => setShowInstallHelp(true)} className="w-full bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex items-center justify-between text-indigo-700 font-bold hover:bg-indigo-100 transition-colors active:scale-95">
+                        <div className="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                            Adicionar à Tela Inicial
+                        </div>
+                        <ChevronRight size={16} className="text-indigo-300" />
+                    </button>
                 </div>
 
                 <div className="mt-8">
@@ -1701,6 +1708,62 @@ export default function DriverMindApp() {
                             </div>
                             <span className="text-[10px] font-bold">Perfil</span>
                         </button>
+                    </div>
+                )}
+
+                {/* Install Instructions Modal */}
+                {showInstallHelp && (
+                    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-bottom-[50%] sm:slide-in-from-bottom-[10%] relative overflow-hidden">
+
+                            <button onClick={() => setShowInstallHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-2 transition-colors">
+                                <X size={20} />
+                            </button>
+
+                            <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-inner">
+                                <MonitorSmartphone size={32} />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-center text-slate-800 mb-2">Instale o DriverMind</h3>
+                            <p className="text-center text-slate-500 text-sm mb-6">Tenha o aplicativo na sua tela de início para acesso rápido e experiência de app nativo.</p>
+
+                            <div className="space-y-6">
+                                {/* Android Instructions */}
+                                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <div className="flex items-center gap-2 mb-3 text-emerald-600 font-bold">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.523 15.3414C17.523 15.3414 16.222 15.8454 15.111 15.8454C13.999 15.8454 12.698 15.3414 12.698 15.3414V11.3934H17.523V15.3414ZM6.47705 15.3414C6.47705 15.3414 7.77805 15.8454 8.88905 15.8454C100 15.8454 11.302 15.3414 11.302 15.3414V11.3934H6.47705V15.3414ZM12 2.6582L10.741 0.479199C10.669 0.354199 10.511 0.312199 10.386 0.384199C10.261 0.457199 10.22 0.614199 10.292 0.739199L11.583 2.9762C10.281 3.5672 9.17105 4.5402 8.41105 5.7672h7.178C14.829 4.5402 13.719 3.5672 12 2.6582Z" /><path d="M4.14893 23h15.7021v-6.289h-15.702v6.289z" /><path d="M4.14893 9.771v5.62h15.7021v-5.62H4.14893z" /></svg>
+                                        No Android (Chrome)
+                                    </div>
+                                    <ol className="text-sm text-slate-600 space-y-2 pl-5 list-decimal font-medium">
+                                        <li>Toque nos <strong className="text-slate-800">três pontinhos</strong> (⋮) no menu do navegador</li>
+                                        <li>Escolha <strong className="text-slate-800">Adicionar à Tela Inicial</strong></li>
+                                        <li>Confirme em <strong className="text-slate-800">Adicionar</strong></li>
+                                    </ol>
+                                    {deferredPrompt && (
+                                        <Button onClick={() => deferredPrompt.prompt()} className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md border-0">
+                                            Instalar Automaticamente
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* iOS Instructions */}
+                                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <div className="flex items-center gap-2 mb-3 text-slate-800 font-bold">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z" /></svg>
+                                        No iPhone (Safari)
+                                    </div>
+                                    <ol className="text-sm text-slate-600 space-y-2 pl-5 list-decimal font-medium">
+                                        <li>Toque no botão <strong className="text-slate-800">Compartilhar</strong> (quadrado com seta pra cima, na barra inferior)</li>
+                                        <li>Role para baixo e toque em <strong className="text-slate-800">Adicionar à Tela de Início</strong></li>
+                                        <li>Confirme em <strong className="text-slate-800">Adicionar</strong> no canto direito superior</li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <button onClick={() => setShowInstallHelp(false)} className="w-full mt-6 py-3 font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors">
+                                Agora não
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
