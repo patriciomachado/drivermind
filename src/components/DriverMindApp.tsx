@@ -701,7 +701,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                             <button onClick={() => setNewMaintenance({ ...newMaintenance, type: 'outros' })} className={`p-2 rounded-xl border font-bold text-xs ${newMaintenance.type === 'outros' ? 'bg-indigo-600 text-white' : 'text-slate-500 border-slate-100'}`}>Outros</button>
                                         </div>
                                         <div className="space-y-3">
-                                            <Input label="Valor R$" type="number" value={newMaintenance.cost} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, cost: e.target.value })} />
+                                            <Input label="Valor R$" type="number" step="any" inputMode="decimal" value={newMaintenance.cost} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, cost: e.target.value.replace(',', '.') })} />
                                             <div className="grid grid-cols-2 gap-3">
                                                 <Input label="KM" type="number" value={newMaintenance.km} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, km: e.target.value })} />
                                                 <Input label="Data" type="date" value={newMaintenance.date} onChange={(e: any) => setNewMaintenance({ ...newMaintenance, date: e.target.value })} />
@@ -782,7 +782,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                                         </div>
                                         <div className="space-y-3">
                                             <div className="grid grid-cols-2 gap-3">
-                                                <Input label="Valor R$" type="number" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value })} />
+                                                <Input label="Valor R$" type="number" step="any" inputMode="decimal" value={newFixedCost.cost} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, cost: e.target.value.replace(',', '.') })} />
                                                 <Input label="Dia Vencimento" type="number" min="1" max="31" value={newFixedCost.day} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, day: e.target.value })} placeholder="Ex: 5" />
                                             </div>
                                             <Input label="Obs (Opcional)" value={newFixedCost.note} onChange={(e: any) => setNewFixedCost({ ...newFixedCost, note: e.target.value })} />
@@ -1572,7 +1572,7 @@ const AddTransactionView = ({ type, session, onBack }: { type: 'expense' | 'earn
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Valor</label>
                 <div className={`flex justify-center items-center text-5xl font-bold text-slate-800 mt-4`}>
                     <span className="text-3xl text-slate-300 mr-2 -mt-2">R$</span>
-                    <input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-40 bg-transparent outline-none text-center placeholder:text-slate-200" placeholder="0" />
+                    <input autoFocus type="number" step="any" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(',', '.'))} className="w-40 bg-transparent outline-none text-center placeholder:text-slate-200" placeholder="0" />
                 </div>
             </div>
 
