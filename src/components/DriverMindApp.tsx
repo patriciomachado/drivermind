@@ -366,7 +366,6 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
                 }
             });
             setLoading(false);
-            alert('Configurações salvas!');
             onBack();
         } catch (error: any) {
             setLoading(false);
