@@ -1577,19 +1577,28 @@ const AddTransactionView = ({ type, session, onBack }: { type: 'expense' | 'earn
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-                {config.options.map((opt: any) => (
-                    <button
-                        key={opt.name}
-                        onClick={() => setCategory(opt)}
-                        className={`p-4 rounded-2xl font-bold border-2 transition-all flex flex-col items-center gap-2 ${category.name === opt.name
-                            ? `border-${config.color}-500 bg-${config.color}-500 text-white shadow-lg transform scale-[1.02]`
-                            : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
-                            }`}
-                    >
-                        <div className={`p-2 rounded-full ${category.name === opt.name ? `bg-white text-${config.color}-500` : 'bg-slate-100 text-slate-500'}`}>{opt.icon}</div>
-                        <span className="capitalize text-sm">{opt.label}</span>
-                    </button>
-                ))}
+                {config.options.map((opt: any) => {
+                    const isActive = category.name === opt.name;
+
+                    // Explicit Tailwind class mapping to prevent PurgeCSS removal
+                    const activeBorderColor = isExpense ? 'border-red-500' : 'border-emerald-500';
+                    const activeBgColor = isExpense ? 'bg-red-500' : 'bg-emerald-500';
+                    const iconBgColorActive = isExpense ? 'text-red-500' : 'text-emerald-500';
+
+                    return (
+                        <button
+                            key={opt.name}
+                            onClick={() => setCategory(opt)}
+                            className={`p-4 rounded-2xl font-bold border-2 transition-all flex flex-col items-center gap-2 ${isActive
+                                ? `${activeBorderColor} ${activeBgColor} text-white shadow-lg transform scale-[1.02]`
+                                : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
+                                }`}
+                        >
+                            <div className={`p-2 rounded-full ${isActive ? `bg-white ${iconBgColorActive}` : 'bg-slate-100 text-slate-500'}`}>{opt.icon}</div>
+                            <span className="capitalize text-sm">{opt.label}</span>
+                        </button>
+                    )
+                })}
             </div>
 
             <Button fullWidth size="lg" onClick={handleSubmit} disabled={!amount || loading} className={isExpense ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}>
