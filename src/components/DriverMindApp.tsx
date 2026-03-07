@@ -143,16 +143,16 @@ interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = ({ label, error, icon, ...props }: CustomInputProps) => (
-    <div className="w-full">
-        {label && <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">{label}</label>}
-        <div className="relative">
+    <div className="w-full min-w-0">
+        {label && <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1 truncate">{label}</label>}
+        <div className="relative min-w-0">
             <input
                 {...props}
-                className={`w-full px-4 py-4 rounded-2xl bg-slate-50 border-2 ${error ? 'border-red-500 bg-red-50' : 'border-transparent focus:border-indigo-500 focus:bg-white'} focus:outline-none transition-all text-lg font-medium text-slate-800 placeholder:text-slate-300 ${icon ? 'pl-11' : ''}`}
+                className={`w-full min-w-0 px-4 py-4 rounded-2xl bg-slate-50 border-2 ${error ? 'border-red-500 bg-red-50' : 'border-transparent focus:border-indigo-500 focus:bg-white'} focus:outline-none transition-all text-lg font-medium text-slate-800 placeholder:text-slate-300 ${icon ? 'pl-11' : ''}`}
             />
             {icon && <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>}
         </div>
-        {error && <span className="text-xs text-red-500 mt-2 block ml-1 font-medium">{error}</span>}
+        {error && <span className="text-xs text-red-500 mt-2 block ml-1 font-medium truncate">{error}</span>}
     </div>
 );
 
