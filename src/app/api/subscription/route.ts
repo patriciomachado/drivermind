@@ -62,13 +62,16 @@ export async function GET() {
             sub.status = 'expired';
         }
 
-        if (sub.status === 'trialing' && sub.trial_end) {
+        if (sub.status === 'trialing' || sub.status === 'active') {
             const now = new Date();
-            const trialEnd = new Date(sub.trial_end);
-            daysRemaining = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+            const expirationDate = sub.status === 'active' ? new Date(sub.current_period_end) : new Date(sub.trial_end);
+            
+            if (expirationDate.getTime()) {
+                daysRemaining = Math.max(0, Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+            }
 
             // If trial expired, update status
-            if (daysRemaining === 0) {
+            if (sub.status === 'trialing' && daysRemaining === 0) {
                 await supabaseAdmin
                     .from('subscriptions')
                     .update({ status: 'expired' })

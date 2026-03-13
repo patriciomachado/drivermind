@@ -2120,8 +2120,13 @@ export default function DriverMindApp() {
                         </div>
                     )}
                     {subscriptionStatus === 'active' && (
-                        <div className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold mb-3 border border-emerald-200 flex items-center gap-1">
-                            <CheckCircle2 size={12} /> Assinante PRO
+                        <div className="flex flex-col items-center gap-2 mb-3">
+                            <div className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold border border-emerald-200 flex items-center gap-1">
+                                <CheckCircle2 size={12} /> Assinante
+                            </div>
+                            <p className="text-xs font-bold text-slate-500">
+                                ⏳ Faltam {trialDaysRemaining} dias para o fim da assinatura
+                            </p>
                         </div>
                     )}
 
