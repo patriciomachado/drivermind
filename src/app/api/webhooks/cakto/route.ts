@@ -25,14 +25,41 @@ export async function POST(req: Request) {
         
         // A Cakto envia o evento e os dados da transação
         // Payload padrão costuma ter { event, data } ou ser o objeto direto
-        const event = body.event || body.type;
+        const event = body.event || body.type || 'unknown';
         const data = body.data || body;
         
         console.log(`[Cakto Webhook] Evento processado: ${event}`);
 
         // O id do usuário deve vir no external_id que passamos no link de checkout
         // Alguns gateways passam isso em data.params ou data.metadata
-        const userId = data?.external_id || data?.params?.external_id || data?.metadata?.external_id;
+        // Função para procurar recursivamente por um padrão de ID de usuário (user_...)
+        const findUserId = (obj: any): string | null => {
+            if (!obj || typeof obj !== 'object') return null;
+            
+            // Campos prováveis
+            const keys = ['external_id', 'refId', 'origin', 'src', 'metadata', 'params', 'custom_id', 'client_id'];
+            for (const key of keys) {
+                const val = obj[key];
+                if (typeof val === 'string' && val.startsWith('user_')) return val;
+                if (typeof val === 'object') {
+                    const result = findUserId(val);
+                    if (result) return result;
+                }
+            }
+            
+            // Busca exaustiva em todos os campos se não achou nos prováveis
+            for (const key in obj) {
+                const val = obj[key];
+                if (typeof val === 'string' && val.startsWith('user_')) return val;
+                if (typeof val === 'object' && !keys.includes(key)) {
+                    const result = findUserId(val);
+                    if (result) return result;
+                }
+            }
+            return null;
+        };
+
+        const userId = findUserId(body);
 
         if (!userId) {
             console.warn('[Cakto Webhook] external_id (userId) não encontrado no evento. Webhook ignorado (modo teste?).');

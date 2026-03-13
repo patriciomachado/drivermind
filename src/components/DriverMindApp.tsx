@@ -430,7 +430,8 @@ const SalesView = ({ userId, onLogout }: { userId: string, onLogout: () => void 
         // Link da Cakto que o usuário deve configurar
         // Adicionamos o user_id como external_id ou parâmetro de rastreio para o webhook identificar o usuário
         const caktoBaseUrl = 'https://pay.cakto.com.br/bahy67i_804749';
-        const checkoutUrl = `${caktoBaseUrl}?external_id=${userId}`;
+        // Enviamos em múltiplos formatos comuns para garantir que a Cakto capture em algum campo (refId, external_id, etc)
+        const checkoutUrl = `${caktoBaseUrl}?external_id=${userId}&refId=${userId}&origin=${userId}&src=${userId}`;
         
         window.location.href = checkoutUrl;
     };
