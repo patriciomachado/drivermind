@@ -1445,38 +1445,38 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                             return (
                                 <div key={day.id} onClick={() => setSelectedDay(day)} className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 relative group cursor-pointer active:scale-[0.98] transition-all hover:bg-slate-50/50">
                                     {/* Date Badge */}
-                                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex flex-col items-center justify-center border border-slate-100 shrink-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-0.5">{weekDay}</span>
-                                        <span className="text-lg font-black text-slate-800 leading-none">{dayNum}</span>
+                                    <div className="w-12 h-12 bg-slate-50/50 rounded-2xl flex flex-col items-center justify-center border border-slate-100/50 shrink-0">
+                                        <span className="text-[10px] font-medium text-slate-400 uppercase leading-none mb-0.5">{weekDay}</span>
+                                        <span className="text-lg font-bold text-slate-700 leading-none">{dayNum}</span>
                                     </div>
 
-                                    {/* Info Info */}
-                                    <div className="flex-1 min-w-0">
+                                    {/* Info Block */}
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
                                         <div className="flex items-center gap-2 mb-1">
                                             {vehicles[day.vehicle_id] && (
-                                                <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-indigo-100">
+                                                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-50/50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-indigo-100/50">
                                                     {vehicles[day.vehicle_id]}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
                                             <div className="flex items-center gap-1">
-                                                <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
-                                                <span className="text-[11px] font-bold text-emerald-600">{formatCurrency(day.income)}</span>
+                                                <div className="w-1 h-1 rounded-full bg-emerald-500/50"></div>
+                                                <span className="text-[11px] font-medium text-emerald-600">{formatCurrency(day.income)}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <div className="w-1 h-1 rounded-full bg-red-400"></div>
-                                                <span className="text-[11px] font-bold text-red-400">{formatCurrency(day.expense)}</span>
+                                                <div className="w-1 h-1 rounded-full bg-red-400/50"></div>
+                                                <span className="text-[11px] font-medium text-red-400">{formatCurrency(day.expense)}</span>
                                             </div>
-                                            <div className="px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-black text-slate-500 border border-slate-200 uppercase tracking-tighter">
+                                            <div className="px-2 py-0.5 bg-slate-50 rounded-md text-[9px] font-bold text-slate-400 border border-slate-100 uppercase tracking-tight">
                                                 R$ {fatKm} / km
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Profit & Actions */}
-                                    <div className="text-right flex flex-col items-end gap-1">
-                                        <div className={`text-lg font-black leading-none ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                    <div className="text-right flex flex-col items-end justify-center gap-1">
+                                        <div className={`text-base font-bold leading-none ${day.profit >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
                                             {formatCurrency(day.profit)}
                                         </div>
                                         <div className="flex items-center gap-2">
