@@ -1076,7 +1076,13 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                     </button>
                     <h3 className="text-lg font-bold">Detalhes do Dia</h3>
                     <p className="text-slate-400 text-sm">
-                        {new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' })}
+                        {(() => {
+                            try {
+                                const d = new Date(day.date + 'T12:00:00');
+                                const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                                return `${d.getDate()} de ${months[d.getMonth()]}`;
+                            } catch (e) { return '-- de --'; }
+                        })()}
                     </p>
                     <div className="mt-4 flex gap-6">
                         <div>
@@ -1306,7 +1312,13 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     // Grouping
     const groups: Record<string, any[]> = {};
     history.forEach(day => {
-        const monthKey = new Date(day.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+        let monthKey = 'Período Indefinido';
+        try {
+            const d = new Date(day.date + 'T12:00:00');
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            monthKey = `${months[d.getMonth()]} de ${d.getFullYear()}`;
+        } catch (e) {}
+        
         if (!groups[monthKey]) groups[monthKey] = [];
         groups[monthKey].push(day);
     });
@@ -1338,7 +1350,12 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={[...history].reverse().slice(-14)}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                <XAxis dataKey="date" tickFormatter={(val) => new Date(val).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                                <XAxis dataKey="date" tickFormatter={(val) => {
+                                    try {
+                                        const d = new Date(val + 'T12:00:00');
+                                        return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                                    } catch (e) { return '--/--'; }
+                                }} tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                                 <Tooltip
                                     formatter={(val: any) => [`R$ ${Number(val).toFixed(2)}`, 'Lucro']} // Fixed type error
                                     labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
@@ -1436,11 +1453,19 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                         </div>
 
                         {days.map(day => {
-                            const kmDriven = day.km_end - day.km_start;
-                            const fatKm = kmDriven > 0 ? (day.income / kmDriven).toFixed(2) : '0.00';
-                            const dateObj = new Date(day.date);
-                            const dayNum = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', timeZone: 'UTC' });
-                            const weekDay = dateObj.toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' }).replace('.', '');
+                            const kmDriven = (day.km_end || 0) - (day.km_start || 0);
+                            const income = day.income || 0;
+                            const fatKm = kmDriven > 0 ? (income / kmDriven).toFixed(2) : '0.00';
+                            
+                            // Safe Date Prep
+                            let dayNum = '--';
+                            let weekDay = '--';
+                            try {
+                                const dateObj = new Date(day.date + 'T12:00:00'); // Mid-day to avoid TZ shifts
+                                dayNum = dateObj.getDate().toString().padStart(2, '0');
+                                const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+                                weekDay = weekDays[dateObj.getDay()];
+                            } catch (e) {}
 
                             return (
                                 <div key={day.id} onClick={() => setSelectedDay(day)} className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 relative group cursor-pointer active:scale-[0.98] transition-all hover:bg-slate-50/50">
@@ -1453,7 +1478,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                     {/* Info Block */}
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                                         <div className="flex items-center gap-2 mb-1">
-                                            {vehicles[day.vehicle_id] && (
+                                            {day.vehicle_id && vehicles[day.vehicle_id] && (
                                                 <span className="text-[9px] font-bold text-indigo-400 bg-indigo-50/50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-indigo-100/50">
                                                     {vehicles[day.vehicle_id]}
                                                 </span>
@@ -1462,11 +1487,11 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
                                             <div className="flex items-center gap-1">
                                                 <div className="w-1 h-1 rounded-full bg-emerald-500/50"></div>
-                                                <span className="text-[11px] font-medium text-emerald-600">{formatCurrency(day.income)}</span>
+                                                <span className="text-[11px] font-medium text-emerald-600">{formatCurrency(day.income || 0)}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <div className="w-1 h-1 rounded-full bg-red-400/50"></div>
-                                                <span className="text-[11px] font-medium text-red-400">{formatCurrency(day.expense)}</span>
+                                                <span className="text-[11px] font-medium text-red-400">{formatCurrency(day.expense || 0)}</span>
                                             </div>
                                             <div className="px-2 py-0.5 bg-slate-50 rounded-md text-[9px] font-bold text-slate-400 border border-slate-100 uppercase tracking-tight">
                                                 R$ {fatKm} / km
@@ -1476,8 +1501,8 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
 
                                     {/* Profit & Actions */}
                                     <div className="text-right flex flex-col items-end justify-center gap-1">
-                                        <div className={`text-base font-bold leading-none ${day.profit >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
-                                            {formatCurrency(day.profit)}
+                                        <div className={`text-base font-bold leading-none ${(day.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
+                                            {formatCurrency(day.profit || 0)}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button 
