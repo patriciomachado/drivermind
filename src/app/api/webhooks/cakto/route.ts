@@ -78,6 +78,7 @@ export async function POST(req: Request) {
                 user_id: userId,
                 status: 'active',
                 current_period_end: periodEnd.toISOString(),
+                // updated_at agregado via migração no banco
                 updated_at: now.toISOString(),
             }, { onConflict: 'user_id' });
 
