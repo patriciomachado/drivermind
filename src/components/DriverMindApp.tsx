@@ -1078,10 +1078,16 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                     <p className="text-slate-400 text-sm">
                         {(() => {
                             try {
-                                const d = new Date(day.date + 'T12:00:00');
-                                const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-                                return `${d.getDate()} de ${months[d.getMonth()]}`;
-                            } catch (e) { return '-- de --'; }
+                                if (day.date) {
+                                    const parts = day.date.split('-');
+                                    if (parts.length === 3) {
+                                        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                                        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                                        return `${d.getDate()} de ${months[d.getMonth()]}`;
+                                    }
+                                }
+                            } catch (e) {}
+                            return '-- de --';
                         })()}
                     </p>
                     <div className="mt-4 flex gap-6">
@@ -1314,9 +1320,14 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     history.forEach(day => {
         let monthKey = 'Período Indefinido';
         try {
-            const d = new Date(day.date + 'T12:00:00');
-            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            monthKey = `${months[d.getMonth()]} de ${d.getFullYear()}`;
+            if (day.date) {
+                const parts = day.date.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                    monthKey = `${months[d.getMonth()]} de ${d.getFullYear()}`;
+                }
+            }
         } catch (e) {}
         
         if (!groups[monthKey]) groups[monthKey] = [];
@@ -1352,9 +1363,12 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis dataKey="date" tickFormatter={(val) => {
                                     try {
-                                        const d = new Date(val + 'T12:00:00');
-                                        return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-                                    } catch (e) { return '--/--'; }
+                                        const parts = val.split('-');
+                                        if (parts.length === 3) {
+                                            return `${parts[2]}/${parts[1]}`;
+                                        }
+                                    } catch (e) {}
+                                    return '--/--';
                                 }} tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                                 <Tooltip
                                     formatter={(val: any) => [`R$ ${Number(val).toFixed(2)}`, 'Lucro']} // Fixed type error
@@ -1457,14 +1471,20 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                             const income = day.income || 0;
                             const fatKm = kmDriven > 0 ? (income / kmDriven).toFixed(2) : '0.00';
                             
-                            // Safe Date Prep
+                            // Safe Date Prep for Mobile
                             let dayNum = '--';
                             let weekDay = '--';
                             try {
-                                const dateObj = new Date(day.date + 'T12:00:00'); // Mid-day to avoid TZ shifts
-                                dayNum = dateObj.getDate().toString().padStart(2, '0');
-                                const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
-                                weekDay = weekDays[dateObj.getDay()];
+                                if (day.date) {
+                                    // Split YYYY-MM-DD manually to be 100% safe from browser TZ implementation differences
+                                    const parts = day.date.split('-');
+                                    if (parts.length === 3) {
+                                        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                                        dayNum = d.getDate().toString().padStart(2, '0');
+                                        const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+                                        weekDay = weekDays[d.getDay()];
+                                    }
+                                }
                             } catch (e) {}
 
                             return (
@@ -1500,18 +1520,16 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                     </div>
 
                                     {/* Profit & Actions */}
-                                    <div className="text-right flex flex-col items-end justify-center gap-1">
+                                    <div className="flex items-center gap-3 shrink-0">
                                         <div className={`text-base font-bold leading-none ${(day.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
                                             {formatCurrency(day.profit || 0)}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); handleDelete(day.id); }} 
-                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(day.id); }} 
+                                            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors active:scale-90"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 </div>
                             );
