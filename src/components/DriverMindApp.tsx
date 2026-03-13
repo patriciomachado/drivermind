@@ -510,35 +510,17 @@ const SalesView = ({ userId, onLogout }: { userId: string, onLogout: () => void 
 };
 
 // --- SETTINGS VIEW ---
-const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void }) => {
+const SettingsView = ({ user, onBack, showAlert, showConfirm }: { user: UserResource, onBack: () => void, showAlert: any, showConfirm: any }) => {
     const { signOut } = useClerk();
     const [name, setName] = useState(((user.unsafeMetadata?.full_name as string) as string) || '');
     const [dailyGoal, setDailyGoal] = useState(((user.unsafeMetadata?.daily_goal as number) as number)?.toString() || '300');
     const [monthlyGoal, setMonthlyGoal] = useState(((user.unsafeMetadata?.monthly_goal as number) as number)?.toString() || '');
     const [loading, setLoading] = useState(false);
 
-    // Notification State
-    const [alertConfig, setAlertConfig] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
-        onConfirm?: () => void;
-        confirmLabel?: string;
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        type: 'info'
-    });
 
-    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-        setAlertConfig({ isOpen: true, title, message, type });
-    };
+    
 
-    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
-        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
-    };
+    
 
     const handleSave = async () => {
         setLoading(true);
@@ -558,7 +540,7 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
             onBack();
         } catch (error: any) {
             setLoading(false);
-            alert('Erro ao salvar: ' + (error.errors?.[0]?.message || error.message));
+            showAlert('Erro', 'Erro ao salvar: ' + (error.errors?.[0]?.message || error.message), 'error');
         }
     };
 
@@ -610,15 +592,7 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
                     </Button>
                 </div>
             </div>
-            <AlertModal
-                isOpen={alertConfig.isOpen}
-                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                type={alertConfig.type}
-                onConfirm={alertConfig.onConfirm}
-                confirmLabel={alertConfig.confirmLabel}
-            />
+            
         </div>
     );
 };
@@ -626,7 +600,7 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
 // AuthView completely replaced by Clerk Components
 
 // --- VEHICLES ---
-const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
+const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId, showAlert, showConfirm }: any) => {
     const supabase = useSupabase();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [isAdding, setIsAdding] = useState(false);
@@ -634,27 +608,11 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [loading, setLoading] = useState(true);
 
     // Notification State
-    const [alertConfig, setAlertConfig] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
-        onConfirm?: () => void;
-        confirmLabel?: string;
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        type: 'info'
-    });
+    
 
-    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-        setAlertConfig({ isOpen: true, title, message, type });
-    };
+    
 
-    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
-        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
-    };
+    
 
     const fetchVehicles = async () => {
         setLoading(true);
@@ -1136,15 +1094,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                     </div>
                 ))}
             </div>
-            <AlertModal
-                isOpen={alertConfig.isOpen}
-                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                type={alertConfig.type}
-                onConfirm={alertConfig.onConfirm}
-                confirmLabel={alertConfig.confirmLabel}
-            />
+            
         </div>
     );
 };
@@ -1298,32 +1248,16 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
 };
 
 // --- HISTORY VIEW ---
-const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) => {
+const HistoryView = ({ userId, user, showAlert, showConfirm }: { userId: string, user: UserResource, showAlert: any, showConfirm: any }) => {
     const supabase = useSupabase();
     const [history, setHistory] = useState<any[]>([]);
     
     // Notification State
-    const [alertConfig, setAlertConfig] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
-        onConfirm?: () => void;
-        confirmLabel?: string;
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        type: 'info'
-    });
+    
 
-    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-        setAlertConfig({ isOpen: true, title, message, type });
-    };
+    
 
-    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
-        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
-    };
+    
     const [vehicles, setVehicles] = useState<Record<string, string>>({});
     const [selectedDay, setSelectedDay] = useState<any>(null); // For Detail Modal
     const [loading, setLoading] = useState(true);
@@ -1670,10 +1604,6 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             {/* Modal */}
             {selectedDay && <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} onUpdate={() => fetchHistory()} vehicles={vehicles} />}
             
-            <AlertModal 
-                {...alertConfig} 
-                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))} 
-            />
         </div>
     );
 };
@@ -2210,6 +2140,13 @@ export default function DriverMindApp() {
     const [subscriptionStatus, setSubscriptionStatus] = useState<string>('loading');
     const [trialDaysRemaining, setTrialDaysRemaining] = useState(0);
 
+    // Global Notification State
+    
+
+    
+
+    
+
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
         setIsIOS(/iphone|ipad|ipod/.test(userAgent));
@@ -2319,8 +2256,8 @@ export default function DriverMindApp() {
 
     const renderContent = () => {
         if (activeTab === 'today') return <TodayWrapper userId={user.id} vehicleId={activeVehicleId} onTabChange={setActiveTab} user={user} />;
-        if (activeTab === 'history') return <HistoryView userId={user.id} user={user} />;
-        if (activeTab === 'vehicles') return <VehiclesView userId={user.id} activeVehicleId={activeVehicleId} setActiveVehicleId={setActiveVehicleId} />;
+        if (activeTab === 'history') return <HistoryView userId={user.id} user={user} showAlert={showAlert} showConfirm={showConfirm} />;
+        if (activeTab === 'vehicles') return <VehiclesView userId={user.id} activeVehicleId={activeVehicleId} setActiveVehicleId={setActiveVehicleId} showAlert={showAlert} showConfirm={showConfirm} />;
         if (activeTab === 'profile') return (
             <div className="p-6 pb-24 animate-in slide-in-from-right-10 duration-500">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Meu Perfil</h2>
@@ -2391,15 +2328,6 @@ export default function DriverMindApp() {
                 </div>
 
                 <p className="text-center text-xs text-slate-300 mt-8">DriverMind v0.1.3 • De um motorista, para outros motoristas.</p>
-                <AlertModal
-                    isOpen={alertConfig.isOpen}
-                    onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
-                    title={alertConfig.title}
-                    message={alertConfig.message}
-                    type={alertConfig.type}
-                    onConfirm={alertConfig.onConfirm}
-                    confirmLabel={alertConfig.confirmLabel}
-                />
             </div>
         );
         return null; // Fallback
@@ -2413,7 +2341,7 @@ export default function DriverMindApp() {
             return <FinishDayWrapper userId={user.id} vehicleId={activeVehicleId} onBack={() => setActiveTab('today')} />
         }
         if (activeTab === 'settings') {
-            return <SettingsView user={user} onBack={() => setActiveTab('profile')} />
+            return <SettingsView user={user} onBack={() => setActiveTab('profile')} showAlert={showAlert} showConfirm={showConfirm} />
         }
         return renderContent();
     };
@@ -2426,6 +2354,11 @@ export default function DriverMindApp() {
                 <main className={`pb-24 ${isMenuOpen ? 'blur-sm brightness-50 pointer-events-none' : ''} transition-all duration-300`}>
                     {MainWrapper()}
                 </main>
+
+                <AlertModal
+                    {...alertConfig}
+                    onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+                />
 
                 {/* FAB Removed */}
 
