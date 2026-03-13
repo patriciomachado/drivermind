@@ -1078,11 +1078,23 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                     <p className="text-slate-400 text-sm">
                         {new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' })}
                     </p>
-                    <div className="mt-4 flex gap-4">
+                    <div className="mt-4 flex gap-6">
                         <div>
                             <div className="text-[10px] text-slate-400 uppercase font-bold">Lucro Líquido</div>
-                            <div className={`text-2xl font-bold ${liveDay.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <div className={`text-xl font-bold ${liveDay.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {formatCurrency(liveDay.profit)}
+                            </div>
+                        </div>
+                        <div className="border-l border-slate-700/50 pl-6 space-y-1">
+                            <div>
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Km Rodados</div>
+                                <div className="text-sm font-bold text-slate-200">{(liveDay.km_end - liveDay.km_start)} km</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Custo / Km</div>
+                                <div className="text-sm font-bold text-red-400">
+                                    R$ {liveDay.km_end - liveDay.km_start > 0 ? (liveDay.expense / (liveDay.km_end - liveDay.km_start)).toFixed(2) : '0.00'}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1432,7 +1444,9 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                         <span className="text-emerald-600 font-medium">+{formatCurrency(day.income)}</span>
                                         <span className="text-red-500 font-medium">-{formatCurrency(day.expense)}</span>
                                         <span className="text-slate-300">|</span>
-                                        <span>{(day.km_end - day.km_start)} km</span>
+                                        <span className="text-red-500 font-medium font-bold">
+                                            R$ {day.km_end - day.km_start > 0 ? (day.expense / (day.km_end - day.km_start)).toFixed(2) : '0.00'} / km
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
