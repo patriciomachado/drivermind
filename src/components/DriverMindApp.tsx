@@ -2140,13 +2140,27 @@ export default function DriverMindApp() {
     const [subscriptionStatus, setSubscriptionStatus] = useState<string>('loading');
     const [trialDaysRemaining, setTrialDaysRemaining] = useState(0);
 
-    // Global Notification State
-    
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
+        onConfirm?: () => void;
+        confirmLabel?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
 
-    
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+        setAlertConfig({ isOpen: true, title, message, type });
+    };
 
-    
-
+    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
+        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
+    };
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
         setIsIOS(/iphone|ipad|ipod/.test(userAgent));
