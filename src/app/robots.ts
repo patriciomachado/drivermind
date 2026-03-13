@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/private/', '/api/'],
         },
-        sitemap: 'https://drivermind.vercel.app/sitemap.xml',
+        sitemap: 'https://drivermind.com.br/sitemap.xml',
     };
 }

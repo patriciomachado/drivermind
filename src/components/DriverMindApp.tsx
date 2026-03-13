@@ -165,102 +165,258 @@ const Input = ({ label, error, icon, ...props }: CustomInputProps) => (
 // --- LANDING PAGE ---
 const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () => void }) => {
     return (
-        <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden flex flex-col">
-            {/* Background Decor */}
-            {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-900/40 to-transparent pointer-events-none"></div>
-            <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
-            <div className="absolute top-40 -left-20 w-72 h-72 bg-blue-600/20 rounded-full blur-[100px]"></div>
-
-            <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-12 pb-6">
-                {/* Header / Logo */}
-                <div className="flex items-center gap-2 mb-8 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
-                    <img src="/logo.png" className="w-8 h-8 rounded-full border border-white/20" alt="DriverMind Logo" draggable={false} onContextMenu={(e) => e.preventDefault()} />
-                    <span className="font-bold text-sm tracking-widest uppercase text-slate-200">Driver Mind</span>
-                </div>
-
-                {/* Hero Section */}
-                <div className="text-center mb-10 max-w-lg mx-auto">
-                    <h1 className="text-5xl font-extrabold tracking-tight mb-4 leading-[1.1]">
-                        Pare de pagar <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">para trabalhar.</span>
-                    </h1>
-                    <p className="text-slate-400 text-lg leading-relaxed">
-                        90% dos motoristas não sabem seu lucro real. O <strong>Driver Mind</strong> é a inteligência que coloca dinheiro no seu bolso.
-                    </p>
-                </div>
-
-                {/* Visual Hook / Cards */}
-                <div className="w-full max-w-sm relative mb-12">
-                    {/* Floating Card 1 */}
-                    <div className="absolute -left-4 top-10 bg-[#1E293B] p-4 rounded-2xl shadow-2xl border border-slate-700/50 transform -rotate-6 animate-in slide-in-from-left duration-700">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-red-500/20 p-2 rounded-lg text-red-500"><Fuel size={20} /></div>
-                            <div>
-                                <div className="text-[10px] text-slate-400 uppercase font-bold">Gasto Real</div>
-                                <div className="text-white font-bold">-R$ 850,00</div>
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-[#0a0a0b] text-white font-sans antialiased overflow-x-hidden flex flex-col">
+            {/* Header */}
+            <header className="absolute top-0 left-0 w-full z-50 py-6 px-6">
+                <div className="max-w-6xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <img 
+                            src="/logo.png" 
+                            className="w-12 h-12 object-contain" 
+                            alt="Drivermind Logo" 
+                        />
+                        <span className="text-2xl font-bold tracking-tight text-white">Drivermind</span>
                     </div>
-
-                    {/* Floating Card 2 (Hero) */}
-                    <div className="bg-[#1E293B]/80 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-indigo-500/30 relative z-10 transform translate-y-2">
-                        <div className="flex justify-between items-center mb-4">
-                            <div>
-                                <div className="text-xs text-slate-400 uppercase font-bold mb-1">Lucro da Semana</div>
-                                <div className="text-3xl font-bold text-emerald-400">R$ 1.890,74</div>
-                            </div>
-                            <div className="bg-emerald-500/20 p-2 rounded-xl text-emerald-400">
-                                <TrendingUp size={24} />
-                            </div>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 w-[75%]"></div>
-                        </div>
-                        <div className="mt-2 text-[10px] text-slate-500 text-right">Meta: 75% atingida</div>
-                    </div>
-
-                    {/* Floating Card 3 */}
-                    <div className="absolute -right-4 bottom-10 bg-[#1E293B] p-4 rounded-2xl shadow-2xl border border-slate-700/50 transform rotate-6 animate-in slide-in-from-right duration-1000">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-blue-500/20 p-2 rounded-lg text-blue-500"><Car size={20} /></div>
-                            <div>
-                                <div className="text-[10px] text-slate-400 uppercase font-bold">Custo / KM</div>
-                                <div className="text-white font-bold">R$ 0,85</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Social Proof */}
-                <div className="flex items-center gap-2 mb-8 bg-white/5 py-2 px-4 rounded-xl">
-                    <div className="flex -space-x-2">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className={`w-6 h-6 rounded-full border-2 border-[#1E293B] bg-slate-400 flex items-center justify-center text-[8px] font-bold text-slate-800`}>U{i}</div>
-                        ))}
-                    </div>
-                    <span className="text-xs text-slate-300">Usado por <strong>+1.200</strong> motoristas</span>
-                </div>
-
-                {/* CTA / Actions */}
-                <div className="w-full max-w-sm space-y-4">
-                    <button
-                        onClick={onSignup}
-                        className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_50px_rgba(16,185,129,0.6)] transform hover:scale-[1.02] transition-all active:scale-95 relative overflow-hidden group"
+                    <button 
+                        onClick={onLogin}
+                        className="hidden sm:inline-block px-5 py-2 border border-[#0df2f2]/50 text-[#0df2f2] text-sm font-bold rounded-lg hover:bg-[#0df2f2] hover:text-[#0a0a0b] transition-all"
                     >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                            TESTAR GRÁTIS POR 7 DIAS <ChevronRight size={20} />
-                        </span>
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    </button>
-
-                    <button onClick={onLogin} className="w-full py-3 text-slate-400 font-medium hover:text-white transition-colors">
-                        Já tenho uma conta
+                        Entrar
                     </button>
                 </div>
-            </div>
+            </header>
 
+            {/* Hero Section */}
+            <section className="relative pt-32 pb-16 px-6 lg:pt-48 lg:pb-32 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-20">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0df2f2] blur-[120px] rounded-full"></div>
+                </div>
+                <div className="max-w-5xl mx-auto text-center relative z-10">
+                    <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#0df2f2]/30 bg-[#0df2f2]/5 text-[#0df2f2] text-sm font-semibold tracking-wide">
+                        🚀 EXPERIMENTE 15 DIAS GRÁTIS
+                    </div>
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
+                        Controle total em <span className="bg-gradient-to-br from-white to-[#0df2f2] bg-clip-text text-transparent">2 minutos.</span><br/>
+                        Lucro real no seu bolso.
+                    </h1>
+                    <p className="text-[#8e8e93] text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+                        Transforme sua rotina como motorista. Pare de perder dinheiro com planilhas confusas e tenha a gestão completa do seu negócio na palma da mão.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button 
+                            onClick={onSignup}
+                            className="w-full sm:w-auto px-8 py-4 bg-[#0df2f2] text-[#0a0a0b] font-bold rounded-xl text-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(13,242,242,0.2)]"
+                        >
+                            Começar 15 Dias Grátis
+                        </button>
+                        <p className="text-sm text-[#8e8e93] sm:ml-4">
+                            Sem cartão de crédito necessário
+                        </p>
+                    </div>
+                </div>
+            </section>
 
+            {/* How It Works */}
+            <section className="py-20 bg-[#121214]/50">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4">Como Funciona?</h2>
+                        <p className="text-[#8e8e93]">Gestão profissional em apenas 3 passos simples</p>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {/* Step 1 */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl relative overflow-hidden group">
+                            <div className="w-12 h-12 bg-[#0df2f2]/10 rounded-full flex items-center justify-center mb-6 text-[#0df2f2] font-bold text-xl group-hover:bg-[#0df2f2] group-hover:text-[#0a0a0b] transition-colors">1</div>
+                            <h3 className="text-xl font-bold mb-3">Inicie seu turno</h3>
+                            <p className="text-[#8e8e93] leading-relaxed">Abra o app e registre seu KM inicial. Pronto, você já está pronto para faturar com inteligência.</p>
+                        </div>
+                        {/* Step 2 */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl relative overflow-hidden group">
+                            <div className="w-12 h-12 bg-[#0df2f2]/10 rounded-full flex items-center justify-center mb-6 text-[#0df2f2] font-bold text-xl group-hover:bg-[#0df2f2] group-hover:text-[#0a0a0b] transition-colors">2</div>
+                            <h3 className="text-xl font-bold mb-3">Lançamentos em Segundos</h3>
+                            <p className="text-[#8e8e93] leading-relaxed">Ao final de cada corrida ou gasto, basta um clique. O cálculo é automático e preciso.</p>
+                        </div>
+                        {/* Step 3 */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl relative overflow-hidden group">
+                            <div className="w-12 h-12 bg-[#0df2f2]/10 rounded-full flex items-center justify-center mb-6 text-[#0df2f2] font-bold text-xl group-hover:bg-[#0df2f2] group-hover:text-[#0a0a0b] transition-colors">3</div>
+                            <h3 className="text-xl font-bold mb-3">Lucro no Bolso</h3>
+                            <p className="text-[#8e8e93] leading-relaxed">Receba insights valiosos e relatórios que mostram exatamente quanto você está ganhando de verdade.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* App Showcase 1 */}
+            <section className="py-24 px-6">
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+                    <div className="flex-1">
+                        <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#0df2f2]/10 text-[#0df2f2] text-xs font-bold uppercase tracking-wider">
+                            Inteligência Financeira
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-8 leading-tight">
+                            Dashboard Inteligente para <span className="text-[#0df2f2]">Decisões Rápidas.</span>
+                        </h2>
+                        <ul className="space-y-6">
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Visão clara do seu faturamento bruto vs. lucro líquido em tempo real.</p>
+                            </li>
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Metas de ganho personalizadas para te manter focado no que importa.</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                        <div className="relative max-w-[320px] rounded-[3rem] border-[8px] border-zinc-800 shadow-2xl overflow-hidden">
+                            <img 
+                                src="/img/dashboard.png" 
+                                className="w-full" 
+                                alt="Dashboard Drivermind" 
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* App Showcase 2 */}
+            <section className="py-24 px-6 bg-[#121214]/30">
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row-reverse items-center gap-16">
+                    <div className="flex-1">
+                        <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#0df2f2]/10 text-[#0df2f2] text-xs font-bold uppercase tracking-wider">
+                            Gestão de Gastos
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-8 leading-tight">
+                            Onde seu <span className="text-[#0df2f2]">Dinheiro Está Indo?</span>
+                        </h2>
+                        <ul className="space-y-6">
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Histórico completo de abastecimentos, manutenção e alimentação.</p>
+                            </li>
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Identifique os dias mais lucrativos e as plataformas que rendem mais.</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                        <div className="relative max-w-[320px] rounded-[3rem] border-[8px] border-zinc-800 shadow-2xl overflow-hidden">
+                            <img 
+                                src="/img/historico.png" 
+                                className="w-full" 
+                                alt="Histórico Financeiro Drivermind" 
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* App Showcase 3 */}
+            <section className="py-24 px-6">
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+                    <div className="flex-1">
+                        <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#0df2f2]/10 text-[#0df2f2] text-xs font-bold uppercase tracking-wider">
+                            Veículo & Manutenção
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-8 leading-tight">
+                            Sua <span className="text-[#0df2f2]">Garagem Digital.</span>
+                        </h2>
+                        <ul className="space-y-6">
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Acompanhe a depreciação real do seu carro e custo por quilômetro.</p>
+                            </li>
+                            <li className="flex gap-4">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-[#0df2f2]/20 flex items-center justify-center text-[#0df2f2]">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <p className="text-[#8e8e93] leading-relaxed">Alertas de revisões preventivas para evitar quebras e gastos surpresa.</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                        <div className="relative max-w-[320px] rounded-[3rem] border-[8px] border-zinc-800 shadow-2xl overflow-hidden">
+                            <img 
+                                src="/img/garagem.jpg" 
+                                className="w-full" 
+                                alt="Gestão de Garagem Drivermind" 
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing Section */}
+            <section className="py-24 px-6 bg-gradient-to-b from-[#0a0a0b] to-[#121214]">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-3xl md:text-5xl font-extrabold mb-12">O único plano que você precisa.</h2>
+                    <div className="relative bg-white/5 backdrop-blur-md border border-white/10 p-12 rounded-[2.5rem] max-w-md mx-auto overflow-hidden">
+                        {/* Glow Effect Behind Card */}
+                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0df2f2]/20 blur-[60px] rounded-full"></div>
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-bold mb-2">Plano Pro</h3>
+                            <div className="flex items-baseline justify-center gap-1 mb-8">
+                                <span className="text-[#0df2f2] text-2xl font-bold">R$</span>
+                                <span className="text-6xl font-extrabold">8,90</span>
+                                <span className="text-[#8e8e93]">/mês</span>
+                            </div>
+                            <ul className="text-left space-y-5 mb-10">
+                                <li className="flex items-center gap-3">
+                                    <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={16} /></div>
+                                    <span>Relatórios Financeiros Ilimitados</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={16} /></div>
+                                    <span>Cálculo Real de Depreciação</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={16} /></div>
+                                    <span>Gestão de Custos de Garagem</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={16} /></div>
+                                    <span>Suporte Prioritário via WhatsApp</span>
+                                </li>
+                            </ul>
+                            <button 
+                                onClick={onSignup}
+                                className="block w-full py-4 bg-[#0df2f2] text-[#0a0a0b] font-bold rounded-xl text-lg hover:bg-white transition-colors"
+                            >
+                                Começar 15 Dias Grátis
+                            </button>
+                            <p className="mt-4 text-xs text-[#8e8e93] uppercase tracking-widest font-semibold">Cancele quando quiser</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="py-12 px-6 border-t border-white/5">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                    <div className="flex items-center gap-3">
+                        <img 
+                            src="/logo.png" 
+                            className="w-10 h-10 object-contain" 
+                            alt="Drivermind Logo" 
+                        />
+                        <span className="text-xl font-bold tracking-tight">Drivermind</span>
+                    </div>
+                    <div className="text-[#8e8e93] text-sm">
+                        © 2024 Drivermind Brasil. Todos os direitos reservados.
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };
@@ -295,50 +451,72 @@ const SalesView = ({ onLogout }: { onLogout: () => void }) => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-[#0a0a0b] text-white relative overflow-hidden flex flex-col items-center justify-center p-6 text-center font-sans">
             {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-red-900/40 to-transparent pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#0df2f2]/10 to-transparent pointer-events-none"></div>
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#0df2f2]/5 rounded-full blur-[100px] animate-pulse"></div>
 
-            <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                <Lock size={40} className="text-red-500" />
-            </div>
-
-            <h1 className="text-3xl font-bold mb-2">Seu teste acabou!</h1>
-            <p className="text-slate-400 mb-8 max-w-xs mx-auto">
-                Espero que tenha gostado! Para continuar controlando seu <strong className="text-emerald-400">lucro real</strong>, assine o plano Pro.
-            </p>
-
-            <div className="bg-[#1E293B] p-6 rounded-3xl border border-indigo-500/30 shadow-2xl w-full max-w-sm relative overflow-hidden mb-8">
-                <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-500 to-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
-                    PLANO PRO
+            <div className="relative z-10 w-full max-w-sm">
+                <div className="w-20 h-20 bg-[#0df2f2]/10 rounded-full flex items-center justify-center mb-6 mx-auto animate-bounce shadow-[0_0_30px_rgba(13,242,242,0.2)]">
+                    <Lock size={40} className="text-[#0df2f2]" />
                 </div>
 
-                <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-6 rounded-xl border border-indigo-500/50 mb-6">
-                    <div className="text-xs text-indigo-200 uppercase font-bold mb-1">Mensal</div>
-                    <div className="text-4xl font-bold text-white">R$ 7,80 <span className="text-sm font-normal text-slate-400">/mês</span></div>
-                    <div className="text-xs text-emerald-400 font-bold mt-1">Menos de R$ 0,26 por dia! 🔥</div>
+                <h1 className="text-3xl font-bold mb-2">Seu teste acabou!</h1>
+                <p className="text-[#8e8e93] mb-8 max-w-xs mx-auto leading-relaxed">
+                    Espero que tenha gostado! Para continuar controlando seu <strong className="text-[#0df2f2]">lucro real</strong>, escolha o plano Pro.
+                </p>
+
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden mb-8 group">
+                    {/* Glow Effect */}
+                    <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#0df2f2]/20 blur-[40px] rounded-full group-hover:bg-[#0df2f2]/30 transition-colors"></div>
+                    
+                    <div className="relative z-10">
+                        <div className="inline-block px-3 py-1 bg-[#0df2f2]/10 border border-[#0df2f2]/20 rounded-lg text-[#0df2f2] text-[10px] font-bold tracking-widest uppercase mb-6">
+                            PLANO PRO
+                        </div>
+
+                        <div className="flex items-baseline justify-center gap-1 mb-6">
+                            <span className="text-[#0df2f2] text-2xl font-bold">R$</span>
+                            <span className="text-6xl font-extrabold">8,90</span>
+                            <span className="text-[#8e8e93]">/mês</span>
+                        </div>
+                        
+                        <div className="space-y-4 text-left mb-8">
+                            <div className="flex items-center gap-3 text-sm text-[#8e8e93]">
+                                <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={14} /></div>
+                                <span>Controle ilimitado de ganhos</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-[#8e8e93]">
+                                <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={14} /></div>
+                                <span>Relatórios Financeiros em PDF</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-[#8e8e93]">
+                                <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={14} /></div>
+                                <span>Gestão Completa de Garagem</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-[#8e8e93]">
+                                <div className="bg-[#0df2f2]/10 p-1 rounded-full text-[#0df2f2]"><CheckCircle2 size={14} /></div>
+                                <span>Suporte Prioritário VIP</span>
+                            </div>
+                        </div>
+
+                        <button
+                            className="w-full bg-[#0df2f2] text-[#0a0a0b] font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(13,242,242,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                            onClick={handleSubscribe}
+                            disabled={loading}
+                        >
+                            {loading ? 'Redirecionando...' : '✨ ASSINAR AGORA'}
+                        </button>
+                    </div>
                 </div>
 
-                <div className="space-y-2 text-left mb-6 px-2">
-                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Controle ilimitado de ganhos</div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Histórico completo</div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Relatórios em PDF</div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Manutenções do veículo</div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300"><CheckCircle2 size={16} className="text-emerald-400" /> Suporte prioritário</div>
-                </div>
-
-                <button
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold py-4 rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_50px_rgba(16,185,129,0.6)] active:scale-95 transition-all flex items-center justify-center gap-2"
-                    onClick={handleSubscribe}
-                    disabled={loading}
+                <button 
+                    onClick={onLogout} 
+                    className="text-[#8e8e93] text-sm hover:text-white transition-colors flex items-center gap-2 mx-auto"
                 >
-                    {loading ? 'Redirecionando...' : '✨ ASSINAR AGORA'}
+                    <LogOut size={16} /> Sair da conta
                 </button>
             </div>
-
-            <button onClick={onLogout} className="text-slate-500 text-sm hover:text-white transition-colors">
-                Sair da conta
-            </button>
         </div>
     );
 };
@@ -435,50 +613,75 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [newVehicle, setNewVehicle] = useState<{ name: string, model: string, plate: string, type: 'combustion' | 'electric' | 'motorcycle' }>({ name: '', model: '', plate: '', type: 'combustion' });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchVehicles = async () => {
-            if (!supabase) return;
-            const { data } = await supabase.from('vehicles').select('*');
-            if (data) setVehicles(data);
+    const fetchVehicles = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/data/vehicles');
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            setVehicles(data || []);
+            
+            // Auto-select first vehicle if none active
+            if (data?.length > 0 && !activeVehicleId) {
+                setActiveVehicleId(data[0].id);
+            }
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+            alert('Erro ao carregar veículos.');
+        } finally {
             setLoading(false);
-        };
-        fetchVehicles();
-    }, [supabase]);
+        }
+    };
+
+    useEffect(() => {
+        if (userId) fetchVehicles();
+    }, [userId]);
 
     const handleSubmit = async () => {
         if (!newVehicle.name) {
             alert('Por favor, preencha o apelido do veículo.');
             return;
         }
-        if (!supabase) {
-            alert('Erro de conexão: o cliente Supabase não está pronto. Tente recarregar a página (F5) e fazer login novamente.');
-            return;
-        }
-        const { data, error } = await supabase.from('vehicles').insert({ ...newVehicle, user_id: userId }).select().single();
+        // Supabase direct insert removed to fix JWT issue
 
-        if (error) {
-            alert(`Erro ao criar veículo: ${error.message}`);
-            return;
-        }
+        setLoading(true);
+        try {
+            // Fix type for DB constraint
+            const vehicleToSave = {
+                ...newVehicle,
+                type: (newVehicle.type as string) === 'car' ? 'combustion' : newVehicle.type,
+                user_id: userId
+            };
 
-        if (data) {
-            setVehicles([...vehicles, data]);
-            setIsAdding(false);
+            const res = await fetch('/api/data/vehicles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(vehicleToSave)
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+            
             setNewVehicle({ name: '', model: '', plate: '', type: 'combustion' });
-            if (!activeVehicleId) setActiveVehicleId(data.id);
+            setIsAdding(false);
+            fetchVehicles();
+        } catch (error: any) {
+            console.error('Error saving vehicle:', error);
+            alert(`Erro ao criar veículo: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('vehicles').delete().eq('id', id);
-        if (error) {
-            alert(`Erro ao remover: ${error.message}`);
-        } else {
-            setVehicles(vehicles.filter(v => v.id !== id));
-            if (activeVehicleId === id) setActiveVehicleId(null);
+        if (!confirm('Excluir este veículo?')) return;
+        try {
+            const res = await fetch(`/api/data/vehicles?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            fetchVehicles();
+        } catch (error: any) {
+            alert('Erro ao excluir: ' + error.message);
         }
-    }
+    };
 
     // Maintenance Logic
     const [maintenanceVehicle, setMaintenanceVehicle] = useState<Vehicle | null>(null);
@@ -488,52 +691,66 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [maintLoading, setMaintLoading] = useState(false);
 
     const openMaintenance = async (v: Vehicle) => {
-        if (!supabase) return;
         setMaintenanceVehicle(v);
         setFixedCostVehicle(null);
-        const { data } = await supabase.from('maintenances').select('*').eq('vehicle_id', v.id).order('date', { ascending: false });
-        setMaintenances(data || []);
-        setIsAddingMaint(false);
+        try {
+            const res = await fetch(`/api/data/maintenances?vehicle_id=${v.id}`);
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            setMaintenances(data || []);
+        } catch (error) {
+            console.error('Error fetching maintenances:', error);
+            alert('Erro ao carregar manutenções.');
+        } finally {
+            setIsAddingMaint(false);
+        }
     };
 
     const saveMaintenance = async () => {
-        if (!maintenanceVehicle || !supabase) return;
+        if (!maintenanceVehicle) return;
         if (!newMaintenance.cost) {
             alert('Por favor, informe o valor da manutenção.');
             return;
         }
 
         setMaintLoading(true);
-        // Save to Supabase
-        const { error } = await supabase.from('maintenances').insert({
-            user_id: userId, // Added user_id back
-            vehicle_id: maintenanceVehicle.id,
-            type: newMaintenance.type,
-            cost: parseFloat(newMaintenance.cost),
-            note: newMaintenance.note,
-            km_at_maintenance: newMaintenance.km ? parseInt(newMaintenance.km) : null,
-            date: newMaintenance.date
-        });
+        try {
+            const payload = {
+                user_id: userId,
+                vehicle_id: maintenanceVehicle.id,
+                type: newMaintenance.type,
+                cost: parseFloat(newMaintenance.cost),
+                note: newMaintenance.note,
+                km_at_maintenance: newMaintenance.km ? parseInt(newMaintenance.km) : null,
+                date: newMaintenance.date
+            };
+            const res = await fetch('/api/data/maintenances', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (error) {
-            alert('Erro ao salvar: ' + error.message);
-        } else {
-            // Refresh list
-            openMaintenance(maintenanceVehicle);
-            // Reset form
-            setNewMaintenance({ type: 'manutencao', cost: '', note: '', km: '', date: new Date().toISOString().substring(0, 10) });
+            if (!res.ok) throw new Error(await res.text());
+            
+            openMaintenance(maintenanceVehicle); // Refresh list
+            setNewMaintenance({ type: 'manutencao', cost: '', note: '', km: '', date: new Date().toISOString().substring(0, 10) }); // Reset form
             setIsAddingMaint(false);
+        } catch (error: any) {
+            console.error('Error saving maintenance:', error);
+            alert('Erro ao salvar: ' + error.message);
+        } finally {
+            setMaintLoading(false);
         }
-        setMaintLoading(false);
     };
 
     const deleteMaintenance = async (id: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('maintenances').delete().eq('id', id);
-        if (error) {
+        if (!maintenanceVehicle) return;
+        try {
+            const res = await fetch(`/api/data/maintenances?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            openMaintenance(maintenanceVehicle);
+        } catch (error: any) {
             alert('Erro ao excluir: ' + error.message);
-        } else {
-            if (maintenanceVehicle) openMaintenance(maintenanceVehicle);
         }
     };
 
@@ -545,16 +762,23 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [fixedCostLoading, setFixedCostLoading] = useState(false);
 
     const openFixedCosts = async (v: Vehicle) => {
-        if (!supabase) return;
         setFixedCostVehicle(v);
         setMaintenanceVehicle(null);
-        const { data } = await supabase.from('fixed_costs').select('*').eq('vehicle_id', v.id).order('date', { ascending: false });
-        setFixedCosts(data || []);
-        setIsAddingFixedCost(false);
+        try {
+            const res = await fetch(`/api/data/fixed_costs?vehicle_id=${v.id}`);
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            setFixedCosts(data || []);
+        } catch (error) {
+            console.error('Error fetching fixed costs:', error);
+            alert('Erro ao carregar custos fixos.');
+        } finally {
+            setIsAddingFixedCost(false);
+        }
     };
 
     const saveFixedCost = async () => {
-        if (!fixedCostVehicle || !supabase) return;
+        if (!fixedCostVehicle) return;
         if (!newFixedCost.cost) {
             alert('Por favor, informe o valor.');
             return;
@@ -566,38 +790,46 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             return;
         }
 
-        // We use the current year/month and the selected day to satisfy the 'date' column schema, 
-        // even though we only care about the day practically.
         const now = new Date();
         const dummyDate = new Date(now.getFullYear(), now.getMonth(), dayNum).toISOString().substring(0, 10);
 
         setFixedCostLoading(true);
-        const { error } = await supabase.from('fixed_costs').insert({
-            user_id: userId,
-            vehicle_id: fixedCostVehicle.id,
-            type: newFixedCost.type,
-            cost: parseFloat(newFixedCost.cost),
-            note: newFixedCost.note,
-            date: dummyDate // Store the constructed date
-        });
+        try {
+            const payload = {
+                user_id: userId,
+                vehicle_id: fixedCostVehicle.id,
+                type: newFixedCost.type,
+                cost: parseFloat(newFixedCost.cost),
+                note: newFixedCost.note,
+                date: dummyDate
+            };
+            const res = await fetch('/api/data/fixed_costs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (error) {
-            alert('Erro ao salvar: ' + error.message);
-        } else {
+            if (!res.ok) throw new Error(await res.text());
+            
             openFixedCosts(fixedCostVehicle);
             setNewFixedCost({ type: 'aluguel', cost: '', note: '', day: '1' });
             setIsAddingFixedCost(false);
+        } catch (error: any) {
+            console.error('Error saving fixed cost:', error);
+            alert('Erro ao salvar: ' + error.message);
+        } finally {
+            setFixedCostLoading(false);
         }
-        setFixedCostLoading(false);
     };
 
     const deleteFixedCost = async (id: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('fixed_costs').delete().eq('id', id);
-        if (error) {
+        if (!fixedCostVehicle) return;
+        try {
+            const res = await fetch(`/api/data/fixed_costs?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            openFixedCosts(fixedCostVehicle);
+        } catch (error: any) {
             alert('Erro ao excluir: ' + error.message);
-        } else {
-            if (fixedCostVehicle) openFixedCosts(fixedCostVehicle);
         }
     };
 
@@ -887,7 +1119,8 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                                             <button
                                                 onClick={async (ev) => {
                                                     ev.stopPropagation();
-                                                    await supabase.from('earnings').delete().eq('id', e.id);
+                                                    const res = await fetch(`/api/data/earnings?id=${e.id}`, { method: 'DELETE' });
+                                                    if (!res.ok) return;
 
                                                     // Update local state to avoid closing modal
                                                     setLiveDay((prev: any) => ({
@@ -928,7 +1161,8 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                                             <button
                                                 onClick={async (ev) => {
                                                     ev.stopPropagation();
-                                                    await supabase.from('expenses').delete().eq('id', e.id);
+                                                    const res = await fetch(`/api/data/expenses?id=${e.id}`, { method: 'DELETE' });
+                                                    if (!res.ok) return;
 
                                                     // Update local state to avoid closing modal
                                                     setLiveDay((prev: any) => ({
@@ -971,47 +1205,58 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     const [totalFixedCosts, setTotalFixedCosts] = useState(0);
 
     const fetchHistory = async () => {
-        if (!supabase) return;
-        // Fetch vehicles for mapping
-        const { data: vParams } = await supabase.from('vehicles').select('id, name');
-        const vMap: Record<string, string> = {};
-        vParams?.forEach((v: any) => { vMap[v.id] = v.name });
-        setVehicles(vMap);
+        try {
+            setLoading(true);
+            const [vRes, daysRes, earnsRes, expsRes, fcRes, maintRes] = await Promise.all([
+                fetch('/api/data/vehicles'),
+                fetch('/api/data/work_days'),
+                fetch('/api/data/earnings'),
+                fetch('/api/data/expenses'),
+                fetch('/api/data/fixed_costs'),
+                fetch('/api/data/maintenances')
+            ]);
 
-        const { data: days } = await supabase.from('work_days').select('*').eq('user_id', userId).eq('status', 'closed').order('date', { ascending: false });
-        if (!days) { setLoading(false); return; }
+            const vParams = await vRes.json();
+            const days = await daysRes.json();
+            const earns = await earnsRes.json();
+            const exps = await expsRes.json();
+            const fcData = await fcRes.json();
+            const maintData = await maintRes.json();
 
-        const { data: earns } = await supabase.from('earnings').select('*').in('work_day_id', days.map((d: any) => d.id));
-        const { data: exps } = await supabase.from('expenses').select('*').in('work_day_id', days.map((d: any) => d.id));
+            const vMap: Record<string, string> = {};
+            vParams?.forEach((v: any) => { vMap[v.id] = v.name });
+            setVehicles(vMap);
 
-        const compiled = days.map((d: any) => {
-            const dayEarns = earns?.filter((e: any) => e.work_day_id === d.id) || [];
-            const dayExps = exps?.filter((e: any) => e.work_day_id === d.id) || [];
-            const totalInc = dayEarns.reduce((a: any, b: any) => a + b.amount, 0);
-            const totalCost = dayExps.reduce((a: any, b: any) => a + b.amount, 0);
-            return {
-                ...d,
-                earnings: dayEarns,
-                expenses: dayExps,
-                income: totalInc,
-                expense: totalCost,
-                profit: totalInc - totalCost
-            };
-        });
-        setHistory(compiled);
+            if (!days) { setLoading(false); return; }
 
-        // Fetch user's fixed costs and maintenances
-        const { data: fcData } = await supabase.from('fixed_costs').select('cost').eq('user_id', userId);
-        const fcTotal = (fcData || []).reduce((acc: any, curr: any) => acc + curr.cost, 0);
-        setTotalFixedCosts(fcTotal);
+            const compiled = days.filter((d: any) => d.user_id === userId && d.status === 'closed').sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((d: any) => {
+                const dayEarns = (earns || []).filter((e: any) => e.work_day_id === d.id);
+                const dayExps = (exps || []).filter((e: any) => e.work_day_id === d.id);
+                const totalInc = dayEarns.reduce((a: any, b: any) => a + b.amount, 0);
+                const totalCost = dayExps.reduce((a: any, b: any) => a + b.amount, 0);
+                return {
+                    ...d,
+                    earnings: dayEarns,
+                    expenses: dayExps,
+                    income: totalInc,
+                    expense: totalCost,
+                    profit: totalInc - totalCost
+                };
+            });
+            setHistory(compiled);
 
-        const { data: maintData } = await supabase.from('maintenances').select('*').eq('user_id', userId);
-        setAllMaintenances(maintData || []);
-
-        setLoading(false);
+            const fcTotal = (fcData || []).filter((fc: any) => fc.user_id === userId).reduce((acc: any, curr: any) => acc + curr.cost, 0);
+            setTotalFixedCosts(fcTotal);
+            setAllMaintenances((maintData || []).filter((m: any) => m.user_id === userId));
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            alert('Erro ao carregar histórico.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useEffect(() => { fetchHistory(); }, [userId, supabase]);
+    useEffect(() => { fetchHistory(); }, [userId]);
 
     const exportPDF = () => {
         const doc = new jsPDF();
@@ -1040,16 +1285,22 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     };
 
     const handleDelete = async (id: string) => {
-        // Cascade delete should handle children if DB configured, mostly we need to manually delete if no cascade.
-        // Assuming Supabase RLS allows.
-        await supabase.from('earnings').delete().eq('work_day_id', id);
-        await supabase.from('expenses').delete().eq('work_day_id', id);
-        const { error } = await supabase.from('work_days').delete().eq('id', id);
-        if (error) alert('Erro ao excluir: ' + error.message);
-        else fetchHistory();
+        if (!confirm('Excluir este dia de trabalho? Isso removerá todos os ganhos e despesas associados.')) return;
+        try {
+            // Delete associated earnings and expenses first
+            await fetch(`/api/data/earnings?work_day_id=${id}`, { method: 'DELETE' });
+            await fetch(`/api/data/expenses?work_day_id=${id}`, { method: 'DELETE' });
+            
+            // Then delete the work day
+            const res = await fetch(`/api/data/work_days?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            fetchHistory();
+        } catch (error: any) {
+            alert('Erro ao excluir: ' + error.message);
+        }
     };
 
-    if (!supabase) return <div className="p-6 text-center text-slate-400">Carregando histórico...</div>;
+    if (loading) return <div className="p-6 text-center text-slate-400">Carregando histórico...</div>;
 
     // Grouping
     const groups: Record<string, any[]> = {};
@@ -1256,17 +1507,35 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
         if (!vehicle) { setLoading(false); return; }
         const today = getTodayISODateLocal();
 
-        // 1. Session
-        const { data: sess } = await supabase.from('work_days').select('*').eq('vehicle_id', vehicle.id).eq('date', today).maybeSingle();
-        setSession(sess);
+        try {
+            const resDays = await fetch('/api/data/work_days');
+            if (!resDays.ok) throw new Error(await resDays.text());
+            const days = await resDays.json();
+            const sess = days.find((d: any) => d.user_id === userId && d.vehicle_id === vehicle.id && d.date === today);
+            setSession(sess || null);
 
-        if (sess) {
-            const { data: earns } = await supabase.from('earnings').select('*').eq('work_day_id', sess.id);
-            setEarnings(earns || []);
-            const { data: exps } = await supabase.from('expenses').select('*').eq('work_day_id', sess.id);
-            setExpenses(exps || []);
+            if (sess) {
+                const [resEarns, resExps] = await Promise.all([
+                    fetch('/api/data/earnings'),
+                    fetch('/api/data/expenses')
+                ]);
+                if (!resEarns.ok) throw new Error(await resEarns.text());
+                if (!resExps.ok) throw new Error(await resExps.text());
+
+                const allEarns = await resEarns.json();
+                const allExps = await resExps.json();
+                setEarnings(allEarns.filter((e: any) => e.work_day_id === sess.id));
+                setExpenses(allExps.filter((e: any) => e.work_day_id === sess.id));
+            } else {
+                setEarnings([]);
+                setExpenses([]);
+            }
+        } catch (error) {
+            console.error('Error fetching today data:', error);
+            alert('Erro ao carregar dados do dia.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     useEffect(() => { fetchData() }, [vehicle]);
@@ -1275,7 +1544,6 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
         if (!vehicle) { alert('Erro: Nenhum veículo selecionado.'); return; }
         if (!kmStart) { alert('Erro: Informe o KM inicial.'); return; }
 
-        // Upsert approach or Try/Catch unique constraint
         const payload = {
             user_id: userId,
             vehicle_id: vehicle.id,
@@ -1284,33 +1552,25 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
             status: 'open'
         };
 
-        const { error } = await supabase.from('work_days').insert(payload);
+        try {
+            const res = await fetch('/api/data/work_days', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (error) {
-            // Se já existe (Unique Violation)
-            if (error.code === '23505') {
-                const today = getTodayISODateLocal();
-                // Buscar quem está bloqueando
-                const { data: conflict } = await supabase.from('work_days').select('*').eq('user_id', userId).eq('date', today).maybeSingle();
-
-                if (conflict) {
-                    if (!conflict.vehicle_id) {
-                        // "Adotar" sessão sem veículo
-                        await supabase.from('work_days').update({ vehicle_id: vehicle.id, km_start: parseFloat(kmStart), status: 'open' }).eq('id', conflict.id);
-                        fetchData();
-                    } else if (conflict.vehicle_id !== vehicle.id) {
-                        alert(`Você já abriu o dia com outro veículo! Mude para o veículo correto ou exclua o dia no banco de dados.`);
-                    } else {
-                        // É o mesmo veículo, só recarregar
-                        fetchData();
-                    }
+            if (!res.ok) {
+                const errText = await res.text();
+                // Check if already exists by checking the error message or common sense
+                if (errText.includes('23505') || errText.includes('already exists')) {
+                     alert(`Você já abriu o dia! Recarregando...`);
+                } else {
+                    throw new Error(errText);
                 }
-            } else {
-                console.error(error);
-                alert(`Erro ao iniciar dia: ${error.message}`);
             }
-        } else {
             fetchData();
+        } catch (error: any) {
+            alert(`Erro ao iniciar dia: ${error.message}`);
         }
     };
 
@@ -1319,15 +1579,18 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
     const handleReopenDay = async () => {
         if (!session) return;
 
-        const { error } = await supabase
-            .from('work_days')
-            .update({ status: 'open', km_end: null })
-            .eq('id', session.id);
+        try {
+            const payload = { status: 'open', km_end: null };
+            const res = await fetch(`/api/data/work_days?id=${session.id}`, {
+                method: 'PUT', // Assuming PUT for update
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (error) {
-            alert('Erro ao reabrir dia: ' + error.message);
-        } else {
+            if (!res.ok) throw new Error(await res.text());
             fetchData();
+        } catch (error: any) {
+            alert('Erro ao reabrir dia: ' + error.message);
         }
     };
 
@@ -1554,8 +1817,12 @@ const AddTransactionView = ({ type, session, onBack }: { type: 'expense' | 'earn
                 ? { work_day_id: session.id, amount: parseFloat(amount), category: category.name, currency: 'BRL', user_id: session.user_id }
                 : { work_day_id: session.id, amount: parseFloat(amount), platform: category.name, currency: 'BRL', user_id: session.user_id };
 
-            const { error } = await supabase.from(table).insert(payload);
-            if (error) throw error;
+            const res = await fetch(`/api/data/${table}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error(await res.text());
             onBack();
         } catch (error: any) {
             alert(`Erro ao salvar: ${error.message}`);
@@ -1642,9 +1909,14 @@ const FinishDayView = ({ userId, vehicleId, onBack }: { userId: string, vehicleI
     const handleConfirm = async () => {
         if (!session || !kmEnd || !supabase) return;
         setLoading(true);
-        const { error } = await supabase.from('work_days').update({ status: 'closed', km_end: parseFloat(kmEnd) }).eq('id', session.id);
-        if (error) {
-            alert(`Erro ao finalizar: ${error.message}`);
+        const res = await fetch(`/api/data/work_days?id=${session.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'closed', km_end: parseFloat(kmEnd) })
+        });
+        if (!res.ok) {
+            const errText = await res.text();
+            alert(`Erro ao finalizar: ${errText}`);
             setLoading(false);
         } else {
             onBack();
@@ -1750,17 +2022,20 @@ export default function DriverMindApp() {
 
     useEffect(() => {
         const init = async () => {
-            if (!user || !supabase) return;
+            if (!user) return;
             const saved = localStorage.getItem(`active_vehicle_${user.id}`);
             if (saved) {
                 setActiveVehicleId(saved);
             } else {
-                const { count } = await supabase.from('vehicles').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-                if (count && count > 0) setActiveTab('vehicles');
+                fetch('/api/data/vehicles')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.length > 0) setActiveTab('vehicles');
+                    });
             }
         };
         init();
-    }, [user, supabase]);
+    }, [user]);
 
     useEffect(() => {
         if (user && activeVehicleId) localStorage.setItem(`active_vehicle_${user.id}`, activeVehicleId);
@@ -1998,9 +2273,15 @@ const TodayWrapper = ({ userId, vehicleId, onTabChange, user }: { userId: string
     const supabase = useSupabase();
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     useEffect(() => {
-        if (!supabase) return;
-        if (vehicleId) supabase.from('vehicles').select('*').eq('id', vehicleId).single().then(({ data }: any) => setVehicle(data));
-    }, [vehicleId, supabase]);
+        if (vehicleId) {
+            fetch(`/api/data/vehicles`)
+                .then(res => res.json())
+                .then(data => {
+                    const v = data.find((veh: any) => veh.id === vehicleId);
+                    if (v) setVehicle(v);
+                });
+        }
+    }, [vehicleId]);
     return <TodayView userId={userId} vehicle={vehicle} onAddEarning={() => onTabChange('add-earning')} onAddExpense={() => onTabChange('add-expense')} onFinishDay={() => onTabChange('finish-day')} user={user} />;
 }
 
@@ -2013,14 +2294,16 @@ const TransactionWrapper = ({ userId, vehicleId, type, onBack }: { userId: strin
     const [session, setSession] = useState<WorkDay | null>(null);
     useEffect(() => {
         const fetchSess = async () => {
-            if (!supabase) return;
             const today = getTodayISODateLocal();
-            // Fetch ANY open session for today, regardless of vehicleId
-            const { data } = await supabase.from('work_days').select('*').eq('user_id', userId).eq('date', today).eq('status', 'open').maybeSingle();
-            setSession(data);
+            const res = await fetch('/api/data/work_days');
+            if (res.ok) {
+                const days = await res.json();
+                const activeSess = days.find((d: any) => d.user_id === userId && d.date === today && d.status === 'open');
+                setSession(activeSess || null);
+            }
         };
         fetchSess();
-    }, [userId, supabase]); // Removed vehicleId dependency to be more robust
+    }, [userId]);
     return <AddTransactionView type={type} session={session} onBack={onBack} />
 }
 

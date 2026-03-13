@@ -22,7 +22,7 @@ export async function GET() {
         if (!sub) {
             // No subscription record - check if this is a new user (auto-start trial)
             const now = new Date();
-            const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days
+            const trialEnd = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days
 
             const { data: newSub } = await supabaseAdmin
                 .from('subscriptions')
@@ -37,7 +37,7 @@ export async function GET() {
             return NextResponse.json({
                 status: 'trialing',
                 trial_end: trialEnd.toISOString(),
-                days_remaining: 14,
+                days_remaining: 15,
             });
         }
 

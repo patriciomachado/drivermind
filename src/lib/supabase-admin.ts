@@ -8,7 +8,7 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const getSupabaseAdmin = () => {
     if (!supabaseUrl || !supabaseServiceRoleKey) {
-        throw new Error('Missing Supabase Admin Keys');
+        throw new Error('Chaves Administrativas do Supabase ausentes. Verifique SUPABASE_SERVICE_ROLE_KEY no ambiente.');
     }
     return createClient(supabaseUrl, supabaseServiceRoleKey, {
         auth: {

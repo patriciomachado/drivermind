@@ -32,8 +32,8 @@ export async function POST(req: Request) {
             metadata: {
                 user_id: userId,
             },
-            success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.vercel.app'}?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.vercel.app'}?canceled=true`,
+            success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.com.br'}?success=true`,
+            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://drivermind.com.br'}?canceled=true`,
         });
 
         return NextResponse.json({ url: session.url });

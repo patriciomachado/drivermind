@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://drivermind.vercel.app';
+    const baseUrl = 'https://drivermind.com.br';
     return [
         {
             url: baseUrl,

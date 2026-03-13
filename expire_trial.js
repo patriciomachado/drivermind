@@ -53,7 +53,7 @@ async function expireTrial() {
         if (error) {
             console.error('❌ Erro no Supabase:', error);
         } else {
-            console.log('🎯 SUCESSO! O teste de 14 dias foi removido e a conta está como "expired".');
+            console.log('🎯 SUCESSO! O teste de 15 dias foi removido e a conta está como "expired".');
             console.log('👉 Agora recarregue (F5) o DriverMind na Vercel para ver a tela de bloqueio!');
         }
     } catch (e) {
