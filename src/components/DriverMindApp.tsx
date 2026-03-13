@@ -1093,7 +1093,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                             <div>
                                 <div className="text-[10px] text-slate-400 uppercase font-bold">Custo / Km</div>
                                 <div className="text-sm font-bold text-slate-200">
-                                    R$ {liveDay.km_end - liveDay.km_start > 0 ? (liveDay.expense / (liveDay.km_end - liveDay.km_start)).toFixed(2) : '0.00'} / km
+                                    R$ {liveDay.km_end - liveDay.km_start > 0 ? ((liveDay.expenses.filter((e: any) => e.category === 'abastecimento').reduce((a: any, b: any) => a + b.amount, 0)) / (liveDay.km_end - liveDay.km_start)).toFixed(2) : '0.00'} / km
                                 </div>
                             </div>
                         </div>
@@ -1233,12 +1233,14 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                 const dayExps = (exps || []).filter((e: any) => e.work_day_id === d.id);
                 const totalInc = dayEarns.reduce((a: any, b: any) => a + b.amount, 0);
                 const totalCost = dayExps.reduce((a: any, b: any) => a + b.amount, 0);
+                const fuelOnly = dayExps.filter((e: any) => e.category === 'abastecimento').reduce((a: any, b: any) => a + b.amount, 0);
                 return {
                     ...d,
                     earnings: dayEarns,
                     expenses: dayExps,
                     income: totalInc,
                     expense: totalCost,
+                    fuelExpense: fuelOnly,
                     profit: totalInc - totalCost
                 };
             });
@@ -1445,7 +1447,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                                         <span className="text-red-500 font-medium">-{formatCurrency(day.expense)}</span>
                                         <span className="text-slate-300">|</span>
                                         <span className="text-slate-400 font-bold">
-                                            R$ {day.km_end - day.km_start > 0 ? (day.expense / (day.km_end - day.km_start)).toFixed(2) : '0.00'} / km
+                                            R$ {day.km_end - day.km_start > 0 ? (day.fuelExpense / (day.km_end - day.km_start)).toFixed(2) : '0.00'} / km
                                         </span>
                                     </div>
                                 </div>
