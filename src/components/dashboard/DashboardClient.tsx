@@ -34,10 +34,10 @@ export default function DashboardClient({
 
     // KPIs
     const kpis = useMemo(() => {
-        const earningsBrl = earnings.filter(e => e.currency === 'BRL').reduce((acc, curr) => acc + curr.amount, 0)
-        const earningsUsd = earnings.filter(e => e.currency === 'USD').reduce((acc, curr) => acc + curr.amount, 0)
-        const expensesBrl = expenses.filter(e => e.currency === 'BRL').reduce((acc, curr) => acc + curr.amount, 0)
-        const expensesUsd = expenses.filter(e => e.currency === 'USD').reduce((acc, curr) => acc + curr.amount, 0)
+        const earningsBrl = (earnings || []).filter(e => e.currency === 'BRL').reduce((acc, curr) => acc + (parseFloat(curr.amount as any) || 0), 0)
+        const earningsUsd = (earnings || []).filter(e => e.currency === 'USD').reduce((acc, curr) => acc + (parseFloat(curr.amount as any) || 0), 0)
+        const expensesBrl = (expenses || []).filter(e => e.currency === 'BRL').reduce((acc, curr) => acc + (parseFloat(curr.amount as any) || 0), 0)
+        const expensesUsd = (expenses || []).filter(e => e.currency === 'USD').reduce((acc, curr) => acc + (parseFloat(curr.amount as any) || 0), 0)
 
         return {
             earningsBrl,

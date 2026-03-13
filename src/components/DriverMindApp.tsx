@@ -10,9 +10,10 @@ import {
     AlertCircle, CheckCircle2, LayoutDashboard, Utensils, History,
     TrendingUp, ArrowRight, Lock, Mail, LogIn, Download, BarChart3,
     User as UserIcon, Share2, RefreshCw, Wrench, Trophy, Target,
-    Zap, Bike, X, TrendingDown, Edit2, Settings, MonitorSmartphone
+    Zap, Bike, X, TrendingDown, Edit2, Settings, MonitorSmartphone, PlusCircle, AlertTriangle, Info
 } from 'lucide-react';
 import SecurityWrapper from './SecurityWrapper';
+import AlertModal from './ui/AlertModal';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -516,6 +517,29 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
     const [monthlyGoal, setMonthlyGoal] = useState(((user.unsafeMetadata?.monthly_goal as number) as number)?.toString() || '');
     const [loading, setLoading] = useState(false);
 
+    // Notification State
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
+        onConfirm?: () => void;
+        confirmLabel?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+        setAlertConfig({ isOpen: true, title, message, type });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
+        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
+    };
+
     const handleSave = async () => {
         setLoading(true);
         const dGoal = parseFloat(dailyGoal);
@@ -586,6 +610,15 @@ const SettingsView = ({ user, onBack }: { user: UserResource, onBack: () => void
                     </Button>
                 </div>
             </div>
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                confirmLabel={alertConfig.confirmLabel}
+            />
         </div>
     );
 };
@@ -599,6 +632,29 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newVehicle, setNewVehicle] = useState<{ name: string, model: string, plate: string, type: 'combustion' | 'electric' | 'motorcycle' }>({ name: '', model: '', plate: '', type: 'combustion' });
     const [loading, setLoading] = useState(true);
+
+    // Notification State
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
+        onConfirm?: () => void;
+        confirmLabel?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+        setAlertConfig({ isOpen: true, title, message, type });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
+        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
+    };
 
     const fetchVehicles = async () => {
         setLoading(true);
@@ -614,7 +670,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             }
         } catch (error) {
             console.error('Error fetching vehicles:', error);
-            alert('Erro ao carregar veículos.');
+            showAlert('Erro', 'Erro ao carregar veículos.', 'error');
         } finally {
             setLoading(false);
         }
@@ -626,7 +682,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 
     const handleSubmit = async () => {
         if (!newVehicle.name) {
-            alert('Por favor, preencha o apelido do veículo.');
+            showAlert('Atenção', 'Por favor, preencha o apelido do veículo.', 'warning');
             return;
         }
         // Supabase direct insert removed to fix JWT issue
@@ -651,23 +707,31 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             setNewVehicle({ name: '', model: '', plate: '', type: 'combustion' });
             setIsAdding(false);
             fetchVehicles();
+            showAlert('Sucesso', 'Veículo criado com sucesso!', 'success');
         } catch (error: any) {
             console.error('Error saving vehicle:', error);
-            alert(`Erro ao criar veículo: ${error.message}`);
+            showAlert('Erro', `Erro ao criar veículo: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Excluir este veículo?')) return;
-        try {
-            const res = await fetch(`/api/data/vehicles?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(await res.text());
-            fetchVehicles();
-        } catch (error: any) {
-            alert('Erro ao excluir: ' + error.message);
-        }
+        showConfirm(
+            'Excluir veículo?',
+            'Esta ação não pode ser desfeita. Todos os dados associados a este veículo serão perdidos.',
+            async () => {
+                try {
+                    const res = await fetch(`/api/data/vehicles?id=${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(await res.text());
+                    fetchVehicles();
+                    showAlert('Sucesso', 'Veículo excluído com sucesso!', 'success');
+                } catch (error: any) {
+                    showAlert('Erro', 'Erro ao excluir: ' + error.message, 'error');
+                }
+            },
+            'Excluir'
+        );
     };
 
     // Maintenance Logic
@@ -687,7 +751,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             setMaintenances(data || []);
         } catch (error) {
             console.error('Error fetching maintenances:', error);
-            alert('Erro ao carregar manutenções.');
+            showAlert('Erro', 'Erro ao carregar manutenções.', 'error');
         } finally {
             setIsAddingMaint(false);
         }
@@ -696,7 +760,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const saveMaintenance = async () => {
         if (!maintenanceVehicle) return;
         if (!newMaintenance.cost) {
-            alert('Por favor, informe o valor da manutenção.');
+            showAlert('Atenção', 'Por favor, informe o valor da manutenção.', 'warning');
             return;
         }
 
@@ -722,9 +786,10 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             openMaintenance(maintenanceVehicle); // Refresh list
             setNewMaintenance({ type: 'manutencao', cost: '', note: '', km: '', date: new Date().toISOString().substring(0, 10) }); // Reset form
             setIsAddingMaint(false);
+            showAlert('Sucesso', 'Manutenção salva com sucesso!', 'success');
         } catch (error: any) {
             console.error('Error saving maintenance:', error);
-            alert('Erro ao salvar: ' + error.message);
+            showAlert('Erro', 'Não foi possível salvar: ' + error.message, 'error');
         } finally {
             setMaintLoading(false);
         }
@@ -732,13 +797,21 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 
     const deleteMaintenance = async (id: string) => {
         if (!maintenanceVehicle) return;
-        try {
-            const res = await fetch(`/api/data/maintenances?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(await res.text());
-            openMaintenance(maintenanceVehicle);
-        } catch (error: any) {
-            alert('Erro ao excluir: ' + error.message);
-        }
+        showConfirm(
+            'Excluir manutenção?',
+            'Esta ação não pode ser desfeita.',
+            async () => {
+                try {
+                    const res = await fetch(`/api/data/maintenances?id=${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(await res.text());
+                    openMaintenance(maintenanceVehicle);
+                    showAlert('Sucesso', 'Manutenção excluída com sucesso!', 'success');
+                } catch (error: any) {
+                    showAlert('Erro', 'Não foi possível excluir: ' + error.message, 'error');
+                }
+            },
+            'Excluir'
+        );
     };
 
     // Fixed Costs Logic
@@ -758,7 +831,7 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             setFixedCosts(data || []);
         } catch (error) {
             console.error('Error fetching fixed costs:', error);
-            alert('Erro ao carregar custos fixos.');
+            showAlert('Erro', 'Erro ao carregar custos fixos.', 'error');
         } finally {
             setIsAddingFixedCost(false);
         }
@@ -767,13 +840,13 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
     const saveFixedCost = async () => {
         if (!fixedCostVehicle) return;
         if (!newFixedCost.cost) {
-            alert('Por favor, informe o valor.');
+            showAlert('Atenção', 'Por favor, informe o valor.', 'warning');
             return;
         }
 
         const dayNum = parseInt(newFixedCost.day);
         if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
-            alert('O dia do vencimento deve ser entre 1 e 31.');
+            showAlert('Atenção', 'O dia do vencimento deve ser entre 1 e 31.', 'warning');
             return;
         }
 
@@ -801,9 +874,10 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
             openFixedCosts(fixedCostVehicle);
             setNewFixedCost({ type: 'aluguel', cost: '', note: '', day: '1' });
             setIsAddingFixedCost(false);
+            showAlert('Sucesso', 'Custo fixo salvo com sucesso!', 'success');
         } catch (error: any) {
             console.error('Error saving fixed cost:', error);
-            alert('Erro ao salvar: ' + error.message);
+            showAlert('Erro', 'Não foi possível salvar: ' + error.message, 'error');
         } finally {
             setFixedCostLoading(false);
         }
@@ -811,13 +885,20 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
 
     const deleteFixedCost = async (id: string) => {
         if (!fixedCostVehicle) return;
-        try {
-            const res = await fetch(`/api/data/fixed_costs?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(await res.text());
-            openFixedCosts(fixedCostVehicle);
-        } catch (error: any) {
-            alert('Erro ao excluir: ' + error.message);
-        }
+        showConfirm(
+            'Excluir custo fixo?',
+            'Esta ação não pode ser desfeita.',
+            async () => {
+                try {
+                    const res = await fetch(`/api/data/fixed_costs?id=${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(await res.text());
+                    openFixedCosts(fixedCostVehicle);
+                } catch (error: any) {
+                    showAlert('Erro', 'Não foi possível excluir: ' + error.message, 'error');
+                }
+            },
+            'Excluir'
+        );
     };
 
     return (
@@ -1055,6 +1136,15 @@ const VehiclesView = ({ userId, activeVehicleId, setActiveVehicleId }: any) => {
                     </div>
                 ))}
             </div>
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                confirmLabel={alertConfig.confirmLabel}
+            />
         </div>
     );
 };
@@ -1065,6 +1155,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
 
     // Initialize local state once to prevent flickering while background fetches occur
     const [liveDay, setLiveDay] = useState<any>(day);
+
 
     if (!liveDay) return null;
     return (
@@ -1118,6 +1209,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                         <h4 className="flex items-center gap-2 font-bold text-slate-700 mb-3 text-sm">
                             <TrendingUp size={16} className="text-emerald-500" /> Ganhos
                         </h4>
+
                         <div className="space-y-2">
                             {liveDay.earnings && liveDay.earnings.length > 0 ? (
                                 liveDay.earnings.map((e: any) => (
@@ -1159,6 +1251,7 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
                         <h4 className="flex items-center gap-2 font-bold text-slate-700 mb-3 text-sm">
                             <TrendingDown size={16} className="text-red-500" /> Despesas
                         </h4>
+
                         <div className="space-y-2">
                             {liveDay.expenses && liveDay.expenses.length > 0 ? (
                                 liveDay.expenses.map((e: any) => (
@@ -1208,6 +1301,29 @@ const HistoryDetailModal = ({ day, vehicles, onClose, onUpdate }: { day: any, ve
 const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) => {
     const supabase = useSupabase();
     const [history, setHistory] = useState<any[]>([]);
+    
+    // Notification State
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'warning' | 'error' | 'confirm';
+        onConfirm?: () => void;
+        confirmLabel?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+        setAlertConfig({ isOpen: true, title, message, type });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void, confirmLabel = 'Confirmar') => {
+        setAlertConfig({ isOpen: true, title, message, type: 'confirm', onConfirm, confirmLabel });
+    };
     const [vehicles, setVehicles] = useState<Record<string, string>>({});
     const [selectedDay, setSelectedDay] = useState<any>(null); // For Detail Modal
     const [loading, setLoading] = useState(true);
@@ -1243,13 +1359,13 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             const compiled = days.filter((d: any) => d.user_id === userId && d.status === 'closed').sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((d: any) => {
                 const dayEarns = (earns || []).filter((e: any) => e.work_day_id === d.id);
                 const dayExps = (exps || []).filter((e: any) => e.work_day_id === d.id);
-                const totalInc = dayEarns.reduce((a: any, b: any) => a + b.amount, 0);
-                const totalCost = dayExps.reduce((a: any, b: any) => a + b.amount, 0);
-                const fuelOnly = dayExps.filter((e: any) => e.category === 'abastecimento').reduce((a: any, b: any) => a + b.amount, 0);
+                const totalInc = (dayEarns || []).reduce((a: any, b: any) => a + (parseFloat(b.amount) || 0), 0);
+                const totalCost = (dayExps || []).reduce((a: any, b: any) => a + (parseFloat(b.amount) || 0), 0);
+                const fuelOnly = (dayExps || []).filter((e: any) => e.category === 'abastecimento').reduce((a: any, b: any) => a + (parseFloat(b.amount) || 0), 0);
                 return {
                     ...d,
-                    earnings: dayEarns,
-                    expenses: dayExps,
+                    earnings: dayEarns || [],
+                    expenses: dayExps || [],
                     income: totalInc,
                     expense: totalCost,
                     fuelExpense: fuelOnly,
@@ -1258,7 +1374,7 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
             });
             setHistory(compiled);
 
-            const fcTotal = (fcData || []).filter((fc: any) => fc.user_id === userId).reduce((acc: any, curr: any) => acc + curr.cost, 0);
+            const fcTotal = (fcData || []).filter((fc: any) => fc.user_id === userId).reduce((acc: any, curr: any) => acc + (parseFloat(curr.cost) || 0), 0);
             setTotalFixedCosts(fcTotal);
             setAllMaintenances((maintData || []).filter((m: any) => m.user_id === userId));
         } catch (error) {
@@ -1298,19 +1414,22 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Excluir este dia de trabalho? Isso removerá todos os ganhos e despesas associados.')) return;
-        try {
-            // Delete associated earnings and expenses first
-            await fetch(`/api/data/earnings?work_day_id=${id}`, { method: 'DELETE' });
-            await fetch(`/api/data/expenses?work_day_id=${id}`, { method: 'DELETE' });
-            
-            // Then delete the work day
-            const res = await fetch(`/api/data/work_days?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(await res.text());
-            fetchHistory();
-        } catch (error: any) {
-            alert('Erro ao excluir: ' + error.message);
-        }
+        showConfirm(
+            'Excluir dia?', 
+            'Isso removerá permanentemente todos os ganhos e despesas deste dia.',
+            async () => {
+                try {
+                    await fetch(`/api/data/earnings?work_day_id=${id}`, { method: 'DELETE' });
+                    await fetch(`/api/data/expenses?work_day_id=${id}`, { method: 'DELETE' });
+                    const res = await fetch(`/api/data/work_days?id=${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(await res.text());
+                    fetchHistory();
+                } catch (error: any) {
+                    showAlert('Erro', 'Não foi possível excluir: ' + error.message, 'error');
+                }
+            },
+            'Excluir'
+        );
     };
 
     if (loading) return <div className="p-6 text-center text-slate-400">Carregando histórico...</div>;
@@ -1386,19 +1505,23 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
 
             {monthKeys.map(month => {
                 const days = groups[month];
-                const mIncome = days.reduce((a, b) => a + b.income, 0);
-                const mVariables = days.reduce((a, b) => a + b.expense, 0);
+                const mIncome = days.reduce((a, b) => a + (parseFloat(b.income as any) || 0), 0);
+                const mVariables = days.reduce((a, b) => a + (parseFloat(b.expense as any) || 0), 0);
 
                 // Filter maintenances for this month
                 const monthMaintenances = allMaintenances.filter(m => {
                     return new Date(m.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }) === month;
                 });
-                const mMaintenancesCost = monthMaintenances.reduce((a, b) => a + b.cost, 0);
+                const mMaintenancesCost = monthMaintenances.reduce((a, b) => a + (parseFloat(b.cost as any) || 0), 0);
 
                 // Total Cost = Variables (Fuel/Food) + Maintenances + Fixed Costs
                 const mCost = mVariables + mMaintenancesCost + totalFixedCosts;
                 const mProfit = mIncome - mCost;
-                const mKm = days.reduce((a, b) => a + (b.km_end - b.km_start), 0);
+                const mKm = days.reduce((a, b) => {
+                    const start = parseFloat(b.km_start as any) || 0;
+                    const end = parseFloat(b.km_end as any) || 0;
+                    return a + (end > start ? end - start : 0);
+                }, 0);
                 const costPerKm = mKm > 0 ? mCost / mKm : 0;
 
                 const dailyGoal = ((user.unsafeMetadata?.daily_goal as number) as number) || 300;
@@ -1476,6 +1599,12 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                             let weekDay = '--';
                             try {
                                 if (day.date) {
+                                    // Implement "Add to Closed Day" feature in HistoryDetailModal
+                                    // Restore values from screenshot
+                                    // Add "Add Earning" button and form to HistoryDetailModal
+                                    // Add "Add Expense" button and form to HistoryDetailModal
+                                    // Verify functionality and refresh logic
+                                    // Final verification of all data visibility and functionality
                                     // Split YYYY-MM-DD manually to be 100% safe from browser TZ implementation differences
                                     const parts = day.date.split('-');
                                     if (parts.length === 3) {
@@ -1540,6 +1669,11 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
 
             {/* Modal */}
             {selectedDay && <HistoryDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} onUpdate={() => fetchHistory()} vehicles={vehicles} />}
+            
+            <AlertModal 
+                {...alertConfig} 
+                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))} 
+            />
         </div>
     );
 };
@@ -1673,8 +1807,8 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
 
 
     // Calculate
-    const totalEarnings = earnings.reduce((a, b) => a + b.amount, 0);
-    const totalExpenses = expenses.reduce((a, b) => a + b.amount, 0);
+    const totalEarnings = (earnings || []).reduce((a, b) => a + (parseFloat(b.amount as any) || 0), 0);
+    const totalExpenses = (expenses || []).reduce((a, b) => a + (parseFloat(b.amount as any) || 0), 0);
     const profit = totalEarnings - totalExpenses;
     const kmDriven = session?.km_end ? session.km_end - session.km_start : 0;
 
@@ -2152,8 +2286,8 @@ export default function DriverMindApp() {
     if (!user) {
         if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
         return authView === 'signup' 
-            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" afterSignUpUrl="/" /></div> 
-            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" afterSignInUrl="/" /></div>;
+            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="path" path="/signup" afterSignUpUrl="/" /></div> 
+            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="path" path="/login" afterSignInUrl="/" /></div>;
     }
 
     // SUBSCRIPTION CHECK
@@ -2234,8 +2368,8 @@ export default function DriverMindApp() {
                         if (navigator.share) {
                             navigator.share({ title: 'Driver Mind', text: 'Controle seus ganhos com inteligência!', url: window.location.href });
                         } else {
-                            alert('Link copiado!');
                             navigator.clipboard.writeText(window.location.href);
+                            showAlert('Pronto!', 'Link copiado para a área de transferência!', 'success');
                         }
                     }} className="w-full bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
                         <div className="flex items-center gap-3"><Share2 size={20} className="text-indigo-500" /> Compartilhar App</div>
@@ -2257,6 +2391,15 @@ export default function DriverMindApp() {
                 </div>
 
                 <p className="text-center text-xs text-slate-300 mt-8">DriverMind v0.1.3 • De um motorista, para outros motoristas.</p>
+                <AlertModal
+                    isOpen={alertConfig.isOpen}
+                    onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    type={alertConfig.type}
+                    onConfirm={alertConfig.onConfirm}
+                    confirmLabel={alertConfig.confirmLabel}
+                />
             </div>
         );
         return null; // Fallback

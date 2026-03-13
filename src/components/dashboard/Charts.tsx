@@ -10,9 +10,9 @@ export function ExpensesPieChart({ expenses, currency }: { expenses: Expense[], 
         .reduce((acc, curr) => {
             const existing = acc.find(item => item.name === curr.category)
             if (existing) {
-                existing.value += curr.amount
+                existing.value += (parseFloat(curr.amount as any) || 0)
             } else {
-                acc.push({ name: curr.category, value: curr.amount })
+                acc.push({ name: curr.category, value: (parseFloat(curr.amount as any) || 0) })
             }
             return acc
         }, [] as { name: string, value: number }[])

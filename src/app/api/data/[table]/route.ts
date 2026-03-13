@@ -30,6 +30,18 @@ export async function GET(
             query = query.eq('vehicle_id', vehicle_id);
         }
 
+        // Filter by id if provided
+        const id = searchParams.get('id');
+        if (id) {
+            query = query.eq('id', id);
+        }
+
+        // Filter by work_day_id if provided
+        const work_day_id = searchParams.get('work_day_id');
+        if (work_day_id) {
+            query = query.eq('work_day_id', work_day_id);
+        }
+
         // Apply ordering if needed
         if (table === 'work_days') {
             query = query.order('date', { ascending: false });
