@@ -1508,24 +1508,25 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
         const today = getTodayISODateLocal();
 
         try {
-            const resDays = await fetch('/api/data/work_days');
+            const resDays = await fetch(`/api/data/work_days?vehicle_id=${vehicle.id}`);
             if (!resDays.ok) throw new Error(await resDays.text());
             const days = await resDays.json();
-            const sess = days.find((d: any) => d.user_id === userId && d.vehicle_id === vehicle.id && d.date === today);
+            // Prioritize today's session, otherwise find the latest open session
+            const sess = days.find((d: any) => d.date === today) || days.find((d: any) => d.status === 'open');
             setSession(sess || null);
 
             if (sess) {
                 const [resEarns, resExps] = await Promise.all([
-                    fetch('/api/data/earnings'),
-                    fetch('/api/data/expenses')
+                    fetch(`/api/data/earnings?work_day_id=${sess.id}`),
+                    fetch(`/api/data/expenses?work_day_id=${sess.id}`)
                 ]);
                 if (!resEarns.ok) throw new Error(await resEarns.text());
                 if (!resExps.ok) throw new Error(await resExps.text());
 
                 const allEarns = await resEarns.json();
                 const allExps = await resExps.json();
-                setEarnings(allEarns.filter((e: any) => e.work_day_id === sess.id));
-                setExpenses(allExps.filter((e: any) => e.work_day_id === sess.id));
+                setEarnings(allEarns);
+                setExpenses(allExps);
             } else {
                 setEarnings([]);
                 setExpenses([]);
@@ -1614,7 +1615,8 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">Vamos lucrar hoje?</h2>
-                    <p className="text-slate-500">Inicie seu dia de trabalho para registrar ganhos.</p>
+                    <p className="text-slate-500 mb-2">Inicie seu dia de trabalho para registrar ganhos.</p>
+                    <div className="text-[10px] text-slate-300 font-mono">v1.1</div>
                 </div>
 
                 <Card>
@@ -1743,8 +1745,17 @@ const TodayView = ({ vehicle, userId, onAddEarning, onAddExpense, onFinishDay, u
                                 <CheckCircle2 size={18} /> Dia Finalizado
                             </div>
                             <Button variant="outline" onClick={async () => {
-                                await supabase.from('work_days').update({ status: 'open', km_end: null }).eq('id', session.id);
-                                fetchData();
+                                try {
+                                    const res = await fetch(`/api/data/work_days?id=${session.id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: 'open', km_end: null })
+                                    });
+                                    if (!res.ok) throw new Error(await res.text());
+                                    fetchData();
+                                } catch (error: any) {
+                                    alert('Erro ao reabrir: ' + error.message);
+                                }
                             }}>Reabrir Dia</Button>
                         </div>
                     </Card>
@@ -1897,14 +1908,24 @@ const FinishDayView = ({ userId, vehicleId, onBack }: { userId: string, vehicleI
 
     useEffect(() => {
         const fetchSession = async () => {
-            if (!vehicleId || !supabase) return;
+            if (!vehicleId) return;
             const today = getTodayISODateLocal();
-            const { data } = await supabase.from('work_days').select('*').eq('vehicle_id', vehicleId).eq('date', today).eq('status', 'open').maybeSingle();
-            setSession(data);
-            setInitLoading(false);
+            try {
+                const res = await fetch(`/api/data/work_days?vehicle_id=${vehicleId}`);
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                
+                // Find the open session (prioritizing open regardless of date to handle midnight shifts)
+                const openSess = data.find((d: any) => d.status === 'open');
+                setSession(openSess || null);
+            } catch (error) {
+                console.error("Error fetching session:", error);
+            } finally {
+                setInitLoading(false);
+            }
         };
         fetchSession();
-    }, [vehicleId, supabase]);
+    }, [vehicleId]);
 
     const handleConfirm = async () => {
         if (!session || !kmEnd || !supabase) return;
@@ -1928,7 +1949,10 @@ const FinishDayView = ({ userId, vehicleId, onBack }: { userId: string, vehicleI
         <div className="p-10 text-center flex flex-col items-center justify-center h-full">
             <AlertCircle size={48} className="text-amber-500 mb-4" />
             <h3 className="text-xl font-bold text-slate-800 mb-2">Dia Não Iniciado</h3>
-            <p className="text-slate-500 mb-8 max-w-[200px]">Você já finalizou o dia ou ele não foi aberto.</p>
+            <p className="text-slate-500 mb-4 max-w-[200px]">Você já finalizou o dia ou ele não foi aberto.</p>
+            <div className="text-[10px] text-slate-300 mb-8 font-mono bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                Sessão não encontrada no servidor • v1.1
+            </div>
             <Button onClick={onBack}>Voltar</Button>
         </div>
     );
@@ -2051,7 +2075,9 @@ export default function DriverMindApp() {
 
     if (!user) {
         if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
-        return authView === 'signup' ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" /></div> : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" /></div>;
+        return authView === 'signup' 
+            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" afterSignUpUrl="/" /></div> 
+            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" afterSignInUrl="/" /></div>;
     }
 
     // SUBSCRIPTION CHECK
@@ -2294,11 +2320,13 @@ const TransactionWrapper = ({ userId, vehicleId, type, onBack }: { userId: strin
     const [session, setSession] = useState<WorkDay | null>(null);
     useEffect(() => {
         const fetchSess = async () => {
+            if (!vehicleId) return;
             const today = getTodayISODateLocal();
-            const res = await fetch('/api/data/work_days');
+            const res = await fetch(`/api/data/work_days?vehicle_id=${vehicleId}`);
             if (res.ok) {
                 const days = await res.json();
-                const activeSess = days.find((d: any) => d.user_id === userId && d.date === today && d.status === 'open');
+                // Prioritize today, fallback to any open session
+                const activeSess = days.find((d: any) => d.date === today) || days.find((d: any) => d.status === 'open');
                 setSession(activeSess || null);
             }
         };
