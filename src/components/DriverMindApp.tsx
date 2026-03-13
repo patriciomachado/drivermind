@@ -1435,32 +1435,62 @@ const HistoryView = ({ userId, user }: { userId: string, user: UserResource }) =
                             </div>
                         </div>
 
-                        {days.map(day => (
-                            <div key={day.id} onClick={() => setSelectedDay(day)} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center relative group cursor-pointer active:scale-[0.98] transition-all">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-slate-800">{new Date(day.date).toLocaleDateString('pt-BR', { day: 'numeric', timeZone: 'UTC' })} <span className="text-xs font-normal text-slate-400 uppercase">({new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' })})</span></span>
-                                        {vehicles[day.vehicle_id] && <span className="text-[10px] text-slate-400 border border-slate-100 px-1.5 py-0.5 rounded uppercase">{vehicles[day.vehicle_id]}</span>}
+                        {days.map(day => {
+                            const kmDriven = day.km_end - day.km_start;
+                            const fatKm = kmDriven > 0 ? (day.income / kmDriven).toFixed(2) : '0.00';
+                            const dateObj = new Date(day.date);
+                            const dayNum = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', timeZone: 'UTC' });
+                            const weekDay = dateObj.toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' }).replace('.', '');
+
+                            return (
+                                <div key={day.id} onClick={() => setSelectedDay(day)} className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 relative group cursor-pointer active:scale-[0.98] transition-all hover:bg-slate-50/50">
+                                    {/* Date Badge */}
+                                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex flex-col items-center justify-center border border-slate-100 shrink-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-0.5">{weekDay}</span>
+                                        <span className="text-lg font-black text-slate-800 leading-none">{dayNum}</span>
                                     </div>
-                                    <div className="text-xs text-slate-400 mt-1 flex gap-2">
-                                        <span className="text-emerald-600 font-medium">+{formatCurrency(day.income)}</span>
-                                        <span className="text-red-500 font-medium">-{formatCurrency(day.expense)}</span>
-                                        <span className="text-slate-300">|</span>
-                                        <span className="text-slate-400 font-bold">
-                                            R$ {day.km_end - day.km_start > 0 ? (day.income / (day.km_end - day.km_start)).toFixed(2) : '0.00'} / km
-                                        </span>
+
+                                    {/* Info Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            {vehicles[day.vehicle_id] && (
+                                                <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-indigo-100">
+                                                    {vehicles[day.vehicle_id]}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
+                                            <div className="flex items-center gap-1">
+                                                <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                                                <span className="text-[11px] font-bold text-emerald-600">{formatCurrency(day.income)}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <div className="w-1 h-1 rounded-full bg-red-400"></div>
+                                                <span className="text-[11px] font-bold text-red-400">{formatCurrency(day.expense)}</span>
+                                            </div>
+                                            <div className="px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-black text-slate-500 border border-slate-200 uppercase tracking-tighter">
+                                                R$ {fatKm} / km
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Profit & Actions */}
+                                    <div className="text-right flex flex-col items-end gap-1">
+                                        <div className={`text-lg font-black leading-none ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                            {formatCurrency(day.profit)}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(day.id); }} 
+                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <span className={`font-bold text-lg ${day.profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                                        {formatCurrency(day.profit)}
-                                    </span>
-                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(day.id); }} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 );
             })}
