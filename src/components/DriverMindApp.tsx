@@ -422,32 +422,17 @@ const LandingView = ({ onSignup, onLogin }: { onSignup: () => void, onLogin: () 
 };
 
 // --- SALES VIEW (TRIAL EXPIRED) ---
-const SalesView = ({ onLogout }: { onLogout: () => void }) => {
+const SalesView = ({ userId, onLogout }: { userId: string, onLogout: () => void }) => {
     const [loading, setLoading] = useState(false);
 
     const handleSubscribe = async () => {
         setLoading(true);
-        try {
-            const res = await fetch('/api/checkout', { method: 'POST' });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                alert(errorText || 'Erro ao iniciar pagamento.');
-                return;
-            }
-
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert('Erro ao iniciar pagamento. Tente novamente.');
-            }
-        } catch (e) {
-            console.error('Checkout error:', e);
-            alert('Erro de conexão com o servidor de pagamento.');
-        } finally {
-            setLoading(false);
-        }
+        // Link da Cakto que o usuário deve configurar
+        // Adicionamos o user_id como external_id ou parâmetro de rastreio para o webhook identificar o usuário
+        const caktoBaseUrl = 'https://pay.cakto.com.br/bahy67i_804749';
+        const checkoutUrl = `${caktoBaseUrl}?external_id=${userId}`;
+        
+        window.location.href = checkoutUrl;
     };
 
     return (
@@ -2104,7 +2089,7 @@ export default function DriverMindApp() {
     }
 
     if (subscriptionStatus === 'expired' || subscriptionStatus === 'canceled') {
-        return <SalesView onLogout={() => signOut()} />;
+        return <SalesView userId={user.id} onLogout={() => signOut()} />;
     }
 
     const renderContent = () => {
