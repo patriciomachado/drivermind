@@ -2166,10 +2166,18 @@ export default function DriverMindApp() {
         setIsIOS(/iphone|ipad|ipod/.test(userAgent));
 
         const checkStandalone = () => {
-            setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true);
+            const mql = window.matchMedia('(display-mode: standalone)');
+            setIsStandalone(mql.matches || (window.navigator as any).standalone === true);
         };
         checkStandalone();
-        window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
+        
+        // Browser compatibility fix: addListener is for older browsers (pre-iOS 14)
+        const mql = window.matchMedia('(display-mode: standalone)');
+        if ((mql as any).addEventListener) {
+            mql.addEventListener('change', checkStandalone);
+        } else if ((mql as any).addListener) {
+            (mql as any).addListener(checkStandalone);
+        }
 
         const handler = (e: any) => {
             e.preventDefault();
@@ -2178,7 +2186,11 @@ export default function DriverMindApp() {
         window.addEventListener('beforeinstallprompt', handler);
         return () => {
             window.removeEventListener('beforeinstallprompt', handler);
-            window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkStandalone);
+            if ((mql as any).removeEventListener) {
+                mql.removeEventListener('change', checkStandalone);
+            } else if ((mql as any).removeListener) {
+                (mql as any).removeListener(checkStandalone);
+            }
         };
     }, []);
 
@@ -2237,8 +2249,8 @@ export default function DriverMindApp() {
     if (!user) {
         if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
         return authView === 'signup' 
-            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="path" path="/signup" afterSignUpUrl="/" /></div> 
-            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="path" path="/login" afterSignInUrl="/" /></div>;
+            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" fallbackRedirectUrl="/" /></div> 
+            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" fallbackRedirectUrl="/" /></div>;
     }
 
     // SUBSCRIPTION CHECK
@@ -2281,12 +2293,12 @@ export default function DriverMindApp() {
                         {user.hasImage ? (
                             <img src={user.imageUrl} alt="Profile" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            user.primaryEmailAddress?.emailAddress?.[0].toUpperCase()
+                            user.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || '?'
                         )}
                         <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 border-4 border-white rounded-full"></div>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900">{user.primaryEmailAddress?.emailAddress?.split('@')[0]}</h3>
-                    <p className="text-slate-400 text-sm mb-4">{user.primaryEmailAddress?.emailAddress}</p>
+                    <h3 className="text-xl font-bold text-slate-900">{user.primaryEmailAddress?.emailAddress?.split('@')[0] || user.firstName || 'Motorista'}</h3>
+                    <p className="text-slate-400 text-sm mb-4">{user.primaryEmailAddress?.emailAddress || 'Sem e-mail'}</p>
 
                     {subscriptionStatus === 'trialing' && (
                         <div className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold mb-3 border border-amber-200">
@@ -2336,7 +2348,7 @@ export default function DriverMindApp() {
                 </div>
 
                 <div className="mt-8">
-                    <Button variant="danger" onClick={() => (window as any).Clerk?.signOut()} fullWidth className="shadow-lg shadow-red-100">
+                    <Button variant="danger" onClick={() => signOut()} fullWidth className="shadow-lg shadow-red-100">
                         <LogOut size={18} className="mr-2" /> Sair da Conta
                     </Button>
                 </div>
@@ -2397,7 +2409,7 @@ export default function DriverMindApp() {
                         {/* Profile/Logout */}
                         <button onClick={() => handleTabChange('profile')} className={`flex flex-col items-center gap-1 ${activeTab === 'profile' ? 'text-indigo-600' : 'hover:text-slate-500'}`}>
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${activeTab === 'profile' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-200 text-slate-500 border-slate-200'}`}>
-                                {user.primaryEmailAddress?.emailAddress?.[0].toUpperCase()}
+                                {user.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || '?'}
                             </div>
                             <span className="text-[10px] font-bold">Perfil</span>
                         </button>
