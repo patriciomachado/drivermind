@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider localization={ptBR}>
+    <ClerkProvider localization={ptBR} domain="drivermind.com.br" isSatellite={false}>
       <html lang="pt-BR">
         <body className={inter.variable} suppressHydrationWarning>
           <JsonLd />
