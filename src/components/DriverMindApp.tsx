@@ -2245,12 +2245,17 @@ export default function DriverMindApp() {
 
 
     if (!isLoaded) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-medium">Carregando Driver Mind...</div>;
+    
+    // DEBUG: trace login flow
+    if (typeof window !== 'undefined') {
+        console.log("[DriverMindApp] Auth State:", { isLoaded, hasUser: !!user, userId: user?.id, authView });
+    }
 
     if (!user) {
         if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
         return authView === 'signup' 
-            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" forceRedirectUrl="https://www.drivermind.com.br" /></div> 
-            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" forceRedirectUrl="https://www.drivermind.com.br" /></div>;
+            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" forceRedirectUrl="/" /></div> 
+            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" forceRedirectUrl="/" /></div>;
     }
 
     // SUBSCRIPTION CHECK
