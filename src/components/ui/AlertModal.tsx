@@ -65,7 +65,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                                     {cancelLabel}
                                 </Button>
                                 <Button 
-                                    className="flex-1"
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white border-0 shadow-lg shadow-red-100"
                                     onClick={() => { onConfirm?.(); onClose(); }}
                                 >
                                     {confirmLabel}
