@@ -2249,8 +2249,8 @@ export default function DriverMindApp() {
     if (!user) {
         if (authView === 'landing') return <LandingView onSignup={() => setAuthView('signup')} onLogin={() => setAuthView('login')} />;
         return authView === 'signup' 
-            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" fallbackRedirectUrl="/" /></div> 
-            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" fallbackRedirectUrl="/" /></div>;
+            ? <div className="h-screen flex items-center justify-center bg-slate-50"><SignUp routing="hash" forceRedirectUrl="/" /></div> 
+            : <div className="h-screen flex items-center justify-center bg-slate-50"><SignIn routing="hash" forceRedirectUrl="/" /></div>;
     }
 
     // SUBSCRIPTION CHECK
